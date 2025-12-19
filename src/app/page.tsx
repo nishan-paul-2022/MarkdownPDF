@@ -5,15 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MdPreview } from '@/components/md-preview';
-import { FileDown, FileText, Play, Shield, Terminal, Upload, RotateCcw } from 'lucide-react';
-
-import { DEFAULT_MARKDOWN, DEFAULT_METADATA } from '@/constants/default-content';
+import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA } from '@/constants/default-content';
+import { ChevronDown, ChevronUp, FileDown, FileText, Play, Shield, Terminal, Upload, RotateCcw } from 'lucide-react';
 
 export default function Home() {
-  const [content, setContent] = useState(DEFAULT_MARKDOWN);
+  const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState(DEFAULT_METADATA);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    fetch(DEFAULT_MARKDOWN_PATH)
+      .then(res => res.text())
+      .then(text => setContent(text))
+      .catch(err => console.error('Failed to load default content:', err));
+  }, []);
 
   const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -71,9 +78,15 @@ export default function Home() {
     fileInputRef.current?.click();
   };
 
-  const handleReset = () => {
-    setContent(DEFAULT_MARKDOWN);
-    setMetadata(DEFAULT_METADATA);
+  const handleReset = async () => {
+    try {
+      const res = await fetch(DEFAULT_MARKDOWN_PATH);
+      const text = await res.text();
+      setContent(text);
+      setMetadata(DEFAULT_METADATA);
+    } catch (err) {
+      console.error('Failed to reset content:', err);
+    }
   };
 
   return (
@@ -132,14 +145,22 @@ export default function Home() {
       <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden">
         {/* Editor Side */}
         <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
-          <div className="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between">
+          <div
+            className="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition-colors"
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+          >
             <div className="flex items-center gap-2 text-xs font-medium text-slate-400 uppercase tracking-wider">
               <FileText className="w-3.5 h-3.5" /> Document Settings
             </div>
+            {isSettingsOpen ? (
+              <ChevronUp className="w-4 h-4 text-slate-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-slate-500" />
+            )}
           </div>
 
-          <div className="flex-grow flex flex-col overflow-hidden">
-            <div className="p-4 bg-slate-900/30 border-b border-slate-800">
+          {isSettingsOpen && (
+            <div className="p-4 bg-slate-900/30 border-b border-slate-800 transition-all duration-300 ease-in-out">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs text-slate-400 font-semibold block uppercase">Course Name</label>
@@ -217,15 +238,15 @@ export default function Home() {
                 />
               </div>
             </div>
+          )}
 
-            <div className="flex-grow relative overflow-hidden">
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-blue-500/30 custom-scrollbar dark-editor"
-                placeholder="Write your markdown here..."
-              />
-            </div>
+          <div className="flex-grow relative overflow-hidden">
+            <Textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-blue-500/30 custom-scrollbar dark-editor"
+              placeholder="Write your markdown here..."
+            />
           </div>
         </div>
 
