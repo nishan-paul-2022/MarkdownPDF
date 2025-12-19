@@ -7,7 +7,7 @@ export async function generatePdf(markdownHtml: string, metadata: any) {
   const page = await browser.newPage();
 
   // Load images as base64
-  const logoPath = path.join(process.cwd(), 'public', 'brand-logo.svg');
+  const logoPath = path.join(process.cwd(), 'public', 'du-logo.png');
   const bgPath = path.join(process.cwd(), 'public', 'cover-bg.png');
 
   let logoBase64 = '';
@@ -148,7 +148,7 @@ export async function generatePdf(markdownHtml: string, metadata: any) {
     <body>
       <div class="cover-page">
         <div class="logo-container">
-          <img src="data:image/svg+xml;base64,${logoBase64}" class="logo" />
+          <img src="data:image/png;base64,${logoBase64}" class="logo" />
         </div>
         
         <div class="university">UNIVERSITY OF DHAKA</div>

@@ -258,10 +258,8 @@ export default function Home() {
             </div>
           </div>
           <div className="flex-grow overflow-hidden">
-            <ScrollArea className="h-full w-full">
-              <div className="max-w-4xl mx-auto p-12">
-                <MdPreview content={content} />
-              </div>
+            <ScrollArea className="h-full w-full bg-slate-900/40">
+              <MdPreview content={content} metadata={metadata} />
             </ScrollArea>
           </div>
         </div>
