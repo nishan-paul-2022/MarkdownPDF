@@ -111,7 +111,7 @@ export default function Home() {
         {/* Editor Side */}
         <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
           <div
-            className="bg-slate-900/80 pl-4 pr-2 py-[11px] border-b border-slate-800 flex items-center justify-between transition-colors group"
+            className="bg-slate-900/80 pl-4 pr-2 py-[11px] border-b border-slate-800 flex items-center justify-between transition-colors"
           >
             <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
               <FileCode className="w-3.5 h-3.5" /> Markdown
@@ -145,7 +145,7 @@ export default function Home() {
               <div className="w-px h-3 bg-slate-800 mx-1" />
 
               <div
-                className="p-1 cursor-pointer hover:bg-slate-800 rounded transition-colors"
+                className="p-1 cursor-pointer hover:bg-slate-800 rounded transition-colors group"
                 title="Toggle Markdown Options"
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
               >

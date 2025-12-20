@@ -97,7 +97,6 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
         {children}
       </div>
 
-      {/* Footer */}
       <div className="mt-auto pt-4 flex justify-end text-[8pt] text-slate-400 font-sans">
         Page {pageNumber} of {totalPages}
       </div>
@@ -105,13 +104,102 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
+interface PageRendererProps {
+  page: { type: 'cover' | 'content', content: string | null };
+  index: number;
+  totalPages: number;
+  metadata?: MdPreviewProps['metadata'];
+}
+
+const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRendererProps) => {
+  if (page.type === 'cover') {
+    return <CoverPage metadata={metadata} />;
+  }
+
+  return (
+    <PageWrapper pageNumber={index + 1} totalPages={totalPages}>
+      <div className="prose prose-slate max-w-none" style={{ fontFamily: 'var(--font-lora), serif' }}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            code({ inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
+              const match = /language-mermaid/.exec(className || '');
+              if (!inline && match) {
+                return <MermaidDiagram chart={String(children).replace(/\n$/, '')} />;
+              }
+              return (
+                <code className={cn("bg-slate-100 text-slate-900 px-1 py-0.5 rounded text-[10pt] font-mono", className)} {...props}>
+                  {children}
+                </code>
+              );
+            },
+            pre: ({ children }) => (
+              <pre className="relative bg-[#1e1e1e] text-[#e0e0e0] p-4 rounded overflow-x-auto text-[9.5pt] my-6 font-mono">
+                {children}
+              </pre>
+            ),
+            h2: ({ children, ...props }) => {
+              const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
+              return (
+                <h2 id={id} className="text-[24pt] font-bold mt-12 mb-6 border-l-[8px] border-[#234258] pl-4 py-2 text-[#234258]" {...props}>
+                  {children}
+                </h2>
+              );
+            },
+            h3: ({ children }) => (
+              <h3 className="text-[18pt] font-semibold mt-8 mb-4 text-[#415A77]">
+                {children}
+              </h3>
+            ),
+            p: ({ children }) => (
+              <p className="mb-6 leading-relaxed text-[#1a1a1a] text-justify text-[11pt]">
+                {children}
+              </p>
+            ),
+            ul: ({ children }) => (
+              <ul className="list-disc list-outside ml-6 mb-6 space-y-2 text-[#1a1a1a] text-[11pt]">
+                {children}
+              </ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="list-decimal list-outside ml-6 mb-6 space-y-2 text-[#1a1a1a] text-[11pt]">
+                {children}
+              </ol>
+            ),
+            table: ({ children }) => (
+              <div className="my-6 overflow-hidden rounded border border-slate-200">
+                <table className="w-full border-collapse text-[10pt]">
+                  {children}
+                </table>
+              </div>
+            ),
+            th: ({ children }) => (
+              <th className="bg-slate-50 border-b border-slate-200 p-2 text-left font-bold text-[#234258]">
+                {children}
+              </th>
+            ),
+            td: ({ children }) => (
+              <td className="border-b border-slate-100 p-2 text-slate-700">
+                {children}
+              </td>
+            ),
+          }}
+        >
+          {page.content || ''}
+        </ReactMarkdown>
+      </div>
+    </PageWrapper>
+  );
+});
+
+PageRenderer.displayName = 'PageRenderer';
+
 export const MdPreview = ({ content, metadata, className, showToolbar = true, onDownload, isGenerating = false }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
   const [customZoom, setCustomZoom] = useState(100);
   const [zoomInput, setZoomInput] = useState('100%');
-  const [viewMode, setViewMode] = useState<'single' | 'continuous'>('single');
   const [fitWidthScale, setFitWidthScale] = useState(0.75);
   const [fitPageScale, setFitPageScale] = useState(0.5);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -131,13 +219,15 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   }, [zoomMode, fitPageScale, fitWidthScale]);
 
   // Split content by page break marker ---
-  const pages = content.split(/\n---\n/).map(p => p.trim()).filter(p => p.length > 0);
-  const totalPages = pages.length + (metadata ? 1 : 0);
+  const allPages = React.useMemo(() => {
+    const pages = (content || '').split(/\n---\n/).map(p => p.trim()).filter(p => p.length > 0);
+    return [
+      ...(metadata ? [{ type: 'cover' as const, content: null }] : []),
+      ...pages.map(p => ({ type: 'content' as const, content: p }))
+    ];
+  }, [content, metadata]);
 
-  const allPages = [
-    ...(metadata ? [{ type: 'cover' as const, content: null }] : []),
-    ...pages.map(p => ({ type: 'content' as const, content: p }))
-  ];
+  const totalPages = allPages.length;
 
   // Update page input when current page changes
   useEffect(() => {
@@ -195,7 +285,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
 
   // Track visible page in continuous mode
   useEffect(() => {
-    if (viewMode !== 'continuous' || !containerRef.current) return;
+    if (!containerRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -228,7 +318,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     return () => {
       observer.disconnect();
     };
-  }, [viewMode, currentPage]);
+  }, [allPages]); // Stable dependency through useMemo
 
   // Keyboard navigation
   useEffect(() => {
@@ -238,37 +328,33 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         return;
       }
 
-      // Disable page navigation in continuous mode
-      if (viewMode === 'continuous') {
-        return;
-      }
-
+      // Handle scrolling with arrow keys/page keys
       switch (e.key) {
-        case 'ArrowLeft':
-        case 'PageUp':
-          e.preventDefault();
-          setCurrentPage(prev => Math.max(1, prev - 1));
+        case 'ArrowUp':
+          containerRef.current?.scrollBy({ top: -50, behavior: 'smooth' });
           break;
-        case 'ArrowRight':
+        case 'ArrowDown':
+          containerRef.current?.scrollBy({ top: 50, behavior: 'smooth' });
+          break;
+        case 'PageUp':
+          containerRef.current?.scrollBy({ top: -400, behavior: 'smooth' });
+          break;
         case 'PageDown':
         case ' ':
-          e.preventDefault();
-          setCurrentPage(prev => Math.min(totalPages, prev + 1));
+          containerRef.current?.scrollBy({ top: 400, behavior: 'smooth' });
           break;
         case 'Home':
-          e.preventDefault();
-          setCurrentPage(1);
+          containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
           break;
         case 'End':
-          e.preventDefault();
-          setCurrentPage(totalPages);
+          containerRef.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
           break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [totalPages, viewMode]);
+  }, []);
 
   // Mouse wheel zoom (Ctrl + scroll)
   useEffect(() => {
@@ -293,11 +379,20 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     setPageInput(e.target.value);
   };
 
+  const scrollToPage = (pageNum: number) => {
+    if (pageNum >= 1 && pageNum <= totalPages && containerRef.current) {
+      const pageEl = containerRef.current.querySelector(`[data-page-index="${pageNum - 1}"]`);
+      if (pageEl) {
+        pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
+
   const handlePageInputSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const pageNum = parseInt(pageInput);
     if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
-      setCurrentPage(pageNum);
+      scrollToPage(pageNum);
     } else {
       setPageInput(currentPage.toString());
     }
@@ -334,84 +429,16 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     return customZoom / 100;
   };
 
+  // No-op for removed single page render
   const renderPage = (page: typeof allPages[0], index: number) => {
-    if (page.type === 'cover') {
-      return <CoverPage key="cover" metadata={metadata} />;
-    }
-
     return (
-      <PageWrapper key={index} pageNumber={index + 1} totalPages={totalPages}>
-        <div className="prose prose-slate max-w-none" style={{ fontFamily: 'var(--font-lora), serif' }}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              code({ inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
-                const match = /language-mermaid/.exec(className || '');
-                if (!inline && match) {
-                  return <MermaidDiagram chart={String(children).replace(/\n$/, '')} />;
-                }
-                return (
-                  <code className={cn("bg-slate-100 text-slate-900 px-1 py-0.5 rounded text-[10pt] font-mono", className)} {...props}>
-                    {children}
-                  </code>
-                );
-              },
-              pre: ({ children }) => (
-                <pre className="relative bg-[#1e1e1e] text-[#e0e0e0] p-4 rounded overflow-x-auto text-[9.5pt] my-6 font-mono">
-                  {children}
-                </pre>
-              ),
-              h2: ({ children, ...props }) => {
-                const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
-                return (
-                  <h2 id={id} className="text-[24pt] font-bold mt-12 mb-6 border-l-[8px] border-[#234258] pl-4 py-2 text-[#234258]" {...props}>
-                    {children}
-                  </h2>
-                );
-              },
-              h3: ({ children }) => (
-                <h3 className="text-[18pt] font-semibold mt-8 mb-4 text-[#415A77]">
-                  {children}
-                </h3>
-              ),
-              p: ({ children }) => (
-                <p className="mb-6 leading-relaxed text-[#1a1a1a] text-justify text-[11pt]">
-                  {children}
-                </p>
-              ),
-              ul: ({ children }) => (
-                <ul className="list-disc list-outside ml-6 mb-6 space-y-2 text-[#1a1a1a] text-[11pt]">
-                  {children}
-                </ul>
-              ),
-              ol: ({ children }) => (
-                <ol className="list-decimal list-outside ml-6 mb-6 space-y-2 text-[#1a1a1a] text-[11pt]">
-                  {children}
-                </ol>
-              ),
-              table: ({ children }) => (
-                <div className="my-6 overflow-hidden rounded border border-slate-200">
-                  <table className="w-full border-collapse text-[10pt]">
-                    {children}
-                  </table>
-                </div>
-              ),
-              th: ({ children }) => (
-                <th className="bg-slate-50 border-b border-slate-200 p-2 text-left font-bold text-[#234258]">
-                  {children}
-                </th>
-              ),
-              td: ({ children }) => (
-                <td className="border-b border-slate-100 p-2 text-slate-700">
-                  {children}
-                </td>
-              ),
-            }}
-          >
-            {page.content || ''}
-          </ReactMarkdown>
-        </div>
-      </PageWrapper>
+      <PageRenderer
+        key={index}
+        page={page}
+        index={index}
+        totalPages={totalPages}
+        metadata={metadata}
+      />
     );
   };
 
@@ -434,22 +461,22 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={viewMode === 'continuous' || currentPage === 1}
+                onClick={() => scrollToPage(currentPage - 1)}
+                disabled={currentPage === 1}
                 className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-colors"
                 title="Previous Page"
               >
                 <ChevronUp className="w-3 h-3" />
               </Button>
 
-              <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1 min-w-[3rem] justify-center">
+              <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1 min-w-[3.5rem] justify-center">
                 <Input
                   type="text"
                   value={pageInput}
                   onChange={handlePageInputChange}
                   onBlur={handlePageInputSubmit}
-                  disabled={viewMode === 'continuous'}
                   className="h-4 w-6 text-center bg-transparent border-0 p-0 text-white text-xs font-medium focus-visible:ring-0 focus-visible:bg-white/5 rounded-sm tabular-nums"
+                  title="Enter page number to jump"
                 />
                 <span className="text-[10px] text-slate-500 font-medium select-none">/ {totalPages}</span>
               </form>
@@ -457,8 +484,8 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={viewMode === 'continuous' || currentPage === totalPages}
+                onClick={() => scrollToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
                 className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition-colors"
                 title="Next Page"
               >
@@ -534,21 +561,6 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
               >
                 <ArrowLeftRight className="w-3 h-3" />
               </Button>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setViewMode(viewMode === 'single' ? 'continuous' : 'single')}
-                className={cn(
-                  "h-6 w-6 rounded-md transition-all active:scale-95 ml-0.5",
-                  viewMode === 'continuous'
-                    ? "bg-slate-700 text-white shadow-sm"
-                    : "text-slate-400 hover:bg-white/5 hover:text-white"
-                )}
-                title={viewMode === 'single' ? "Enable Scroll" : "Single Page"}
-              >
-                <ScrollText className="w-3 h-3" />
-              </Button>
             </div>
 
             <div className="w-px h-4 bg-slate-800 mx-0.5" />
@@ -580,29 +592,25 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         ref={containerRef}
         className="flex-grow overflow-auto p-4 flex justify-center bg-slate-900/40 custom-scrollbar"
       >
-        {viewMode === 'single' ? (
-          <div
-            className="transition-transform duration-200 origin-top"
-            style={{ transform: `scale(${getScale()})` }}
-          >
-            <div ref={pageRef} className="shadow-2xl">
-              {renderPage(allPages[currentPage - 1], currentPage - 1)}
+        <div
+          className="flex flex-col gap-8 origin-top"
+          style={{
+            transform: `scale(${getScale()}) translateZ(0)`,
+            height: 'fit-content',
+            willChange: 'transform'
+          }}
+        >
+          {allPages.map((page, index) => (
+            <div
+              key={index}
+              ref={index === 0 ? pageRef : null}
+              data-page-index={index}
+              className="shadow-xl"
+            >
+              {renderPage(page, index)}
             </div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-8">
-            {allPages.map((page, index) => (
-              <div
-                key={index}
-                ref={index === 0 ? pageRef : null}
-                data-page-index={index}
-                className="shadow-2xl"
-              >
-                {renderPage(page, index)}
-              </div>
-            ))}
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     </div>
   );
