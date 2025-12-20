@@ -218,23 +218,25 @@ export default function Home() {
                   />
                 </div>
               </div>
-              <div className="space-y-2 mt-4">
-                <label className="text-xs text-slate-400 font-semibold block uppercase">Cover Title</label>
-                <input
-                  name="title"
-                  value={metadata.title}
-                  onChange={handleMetadataChange}
-                  className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
-              <div className="space-y-2 mt-4">
-                <label className="text-xs text-slate-400 font-semibold block uppercase">Cover Subtitle</label>
-                <input
-                  name="subtitle"
-                  value={metadata.subtitle}
-                  onChange={handleMetadataChange}
-                  className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
-                />
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-400 font-semibold block uppercase">Cover Title</label>
+                  <input
+                    name="title"
+                    value={metadata.title}
+                    onChange={handleMetadataChange}
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-400 font-semibold block uppercase">Cover Subtitle</label>
+                  <input
+                    name="subtitle"
+                    value={metadata.subtitle}
+                    onChange={handleMetadataChange}
+                    className="w-full bg-slate-800 border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
               </div>
             </div>
           )}

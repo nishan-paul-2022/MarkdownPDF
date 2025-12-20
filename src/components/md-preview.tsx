@@ -55,16 +55,16 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
         <div className="text-[32px] font-bold tracking-[2px] mt-2 uppercase">UNIVERSITY OF DHAKA</div>
         <div className="text-[18px] font-normal mt-2 opacity-90">Professional Masters in Information and Cyber Security</div>
 
-        <div className="mt-[2.5cm] mb-[2cm] w-full">
-          <div className="text-[44px] font-extrabold leading-[1.2] mb-5 w-full break-words">
+        <div className="mt-[2.5cm] mb-[2cm] w-full flex flex-col items-center">
+          <div className="text-[38px] font-extrabold leading-[1.2] mb-5 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
             {metadata.title || 'Public Key Infrastructure (PKI)'}
           </div>
-          <div className="text-[26px] font-semibold opacity-95 w-full">
+          <div className="text-[22px] font-semibold opacity-95 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
             {metadata.subtitle || 'Implementation & Web Application Integration'}
           </div>
         </div>
 
-        <div className="mt-[1.5cm] text-[19px] w-[80%] border-b border-white/20 pb-3">
+        <div className="mt-[1.5cm] text-[18px] w-full max-w-[90%] border-b border-white/20 pb-3 whitespace-nowrap overflow-hidden text-ellipsis">
           Course: {metadata.course}
         </div>
 

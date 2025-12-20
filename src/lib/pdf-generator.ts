@@ -92,29 +92,39 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       margin-bottom: 2cm;
     }
     .report-title {
-      font-size: 44px;
+      font-size: 38px;
       font-weight: 800;
       line-height: 1.2;
       margin-bottom: 20px;
       width: 100%;
+      padding: 0 40px;
+      box-sizing: border-box;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .report-subtitle {
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 600;
       opacity: 0.95;
       width: 100%;
+      padding: 0 40px;
+      box-sizing: border-box;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .course-info {
       margin-top: 1.5cm;
-      font-size: 19px;
-      width: 80%;
+      font-size: 18px;
+      width: 90%;
       border-bottom: 1px solid rgba(255,255,255,0.2);
       padding-bottom: 12px;
       text-align: center;
       box-sizing: border-box;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .student-details {
       margin-top: 1cm;
