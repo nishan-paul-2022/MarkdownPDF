@@ -125,63 +125,87 @@ const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRend
           remarkPlugins={[remarkGfm]}
           components={{
             code({ inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
-              const match = /language-mermaid/.exec(className || '');
-              if (!inline && match) {
+              const match = /language-(\w+)/.exec(className || '');
+              if (!inline && match && match[1] === 'mermaid') {
                 return <MermaidDiagram chart={String(children).replace(/\n$/, '')} />;
               }
               return (
-                <code className={cn("bg-slate-100 text-slate-900 px-1 py-0.5 rounded text-[10pt] font-mono", className)} {...props}>
+                <code
+                  className={cn(
+                    inline ? "bg-slate-100 text-[#0c4a6e] px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200" : "bg-transparent p-0 border-0 text-inherit",
+                    className
+                  )}
+                  {...props}
+                >
                   {children}
                 </code>
               );
             },
             pre: ({ children }) => (
-              <pre className="relative bg-[#1e1e1e] text-[#e0e0e0] p-4 rounded overflow-x-auto text-[9.5pt] my-6 font-mono">
+              <pre className="my-8 relative bg-[#0f172a] text-[#f8fafc] p-6 rounded-lg overflow-x-auto text-[9.5pt] font-mono shadow-md border border-slate-800">
                 {children}
               </pre>
             ),
             h2: ({ children, ...props }) => {
               const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
               return (
-                <h2 id={id} className="text-[24pt] font-bold mt-12 mb-6 border-l-[8px] border-[#234258] pl-4 py-2 text-[#234258]" {...props}>
+                <h2 id={id} className="text-[26pt] font-extrabold mt-16 mb-8 border-l-[10px] border-[#0ea5e9] pl-6 py-3 text-[#0f172a] bg-slate-50 rounded-r-lg" {...props}>
                   {children}
                 </h2>
               );
             },
             h3: ({ children }) => (
-              <h3 className="text-[18pt] font-semibold mt-8 mb-4 text-[#415A77]">
+              <h3 className="text-[20pt] font-bold mt-10 mb-5 text-[#0369a1] flex items-center gap-3">
+                <span className="w-2 h-2 rounded-full bg-[#0ea5e9]"></span>
                 {children}
               </h3>
             ),
             p: ({ children }) => (
-              <p className="mb-6 leading-relaxed text-[#1a1a1a] text-justify text-[11pt]">
+              <p className="mb-8 leading-[1.8] text-[#334155] text-justify text-[11.5pt] font-normal">
                 {children}
               </p>
             ),
             ul: ({ children }) => (
-              <ul className="list-disc list-outside ml-6 mb-6 space-y-2 text-[#1a1a1a] text-[11pt]">
+              <ul className="list-none mb-8 space-y-3 text-[#334155] text-[11.5pt]">
                 {children}
               </ul>
             ),
             ol: ({ children }) => (
-              <ol className="list-decimal list-outside ml-6 mb-6 space-y-2 text-[#1a1a1a] text-[11pt]">
+              <ol className="list-decimal ml-10 mb-8 space-y-3 text-[#334155] text-[11.5pt]">
                 {children}
               </ol>
             ),
+            li: ({ children, ...props }: any) => {
+              if (props.ordered) {
+                return (
+                  <li className="pl-2 mb-1 leading-relaxed">
+                    {children}
+                  </li>
+                );
+              }
+              return (
+                <li className="flex gap-3 mb-1 leading-relaxed text-justify">
+                  <span className="text-[#0ea5e9] font-bold mt-2 min-w-[10px] flex justify-center flex-shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0ea5e9]"></span>
+                  </span>
+                  <span className="flex-1">{children}</span>
+                </li>
+              );
+            },
             table: ({ children }) => (
-              <div className="my-6 overflow-hidden rounded border border-slate-200">
-                <table className="w-full border-collapse text-[10pt]">
+              <div className="my-10 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+                <table className="w-full border-collapse text-[10.5pt]">
                   {children}
                 </table>
               </div>
             ),
             th: ({ children }) => (
-              <th className="bg-slate-50 border-b border-slate-200 p-2 text-left font-bold text-[#234258]">
+              <th className="bg-slate-100 border-b border-slate-200 p-4 text-left font-bold text-[#0369a1] uppercase tracking-wider text-[9pt]">
                 {children}
               </th>
             ),
             td: ({ children }) => (
-              <td className="border-b border-slate-100 p-2 text-slate-700">
+              <td className="border-b border-slate-50 p-4 text-slate-600">
                 {children}
               </td>
             ),
@@ -220,13 +244,59 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     });
   }, [zoomMode, fitPageScale, fitWidthScale]);
 
-  // Split content by page break marker ---
+  // Split content by page break marker --- and H2 headers
   const allPages = React.useMemo(() => {
-    const pages = (content || '').split(/\n---\n/).map(p => p.trim()).filter(p => p.length > 0);
-    return [
-      ...(metadata ? [{ type: 'cover' as const, content: null }] : []),
-      ...pages.map(p => ({ type: 'content' as const, content: p }))
-    ];
+    const rawContent = content || '';
+    // First split by explicit page breaks
+    const chunks = rawContent.split(/\n---\n/);
+
+    const processedPages: { type: 'content' | 'cover', content: string | null }[] = [];
+
+    if (metadata) {
+      processedPages.push({ type: 'cover', content: null });
+    }
+
+    const tempChunks: string[] = [];
+    chunks.forEach(chunk => {
+      // Split by H2 at start of line
+      const subChunks = chunk.split(/(?=^##\s)/m);
+      subChunks.forEach(subChunk => {
+        if (subChunk.trim()) {
+          tempChunks.push(subChunk.trim());
+        }
+      });
+    });
+
+    // Handle orphaned headings (headings at the end of a chunk)
+    const finalChunks: string[] = [];
+    for (let i = 0; i < tempChunks.length; i++) {
+      let current = tempChunks[i];
+
+      // Check if current chunk ends with a heading
+      const orphanHeadingMatch = current.match(/(\n|^)(#{1,6}\s+[^\n]+)$/);
+
+      if (orphanHeadingMatch && i < tempChunks.length - 1) {
+        const heading = orphanHeadingMatch[2];
+        const headingStartIdx = current.lastIndexOf(heading);
+        const newCurrent = current.substring(0, headingStartIdx).trim();
+
+        // Only move if there's actually content before the heading
+        if (newCurrent) {
+          current = newCurrent;
+          tempChunks[i + 1] = heading + "\n" + tempChunks[i + 1];
+        }
+      }
+
+      if (current.trim()) {
+        finalChunks.push(current.trim());
+      }
+    }
+
+    finalChunks.forEach(c => {
+      processedPages.push({ type: 'content' as const, content: c });
+    });
+
+    return processedPages;
   }, [content, metadata]);
 
   const totalPages = allPages.length;

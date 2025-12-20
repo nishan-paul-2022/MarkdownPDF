@@ -39,14 +39,92 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       padding: 0;
       margin: 0;
       color: #1a1a1a;
+      background: white;
     }
-    .report-container { padding: 2cm; }
-    h2 { font-size: 24pt; color: #234258; border-left: 8px solid #234258; padding-left: 15px; margin-top: 1.5cm; margin-bottom: 0.5cm; page-break-after: avoid; }
-    h3 { font-size: 18pt; color: #415A77; margin-top: 1cm; page-break-after: avoid; }
-    p { text-align: justify; line-height: 1.6; font-family: 'Lora', serif; font-size: 11pt; }
+    .report-container { padding: 0; }
+    .content-page { padding: 2cm; page-break-after: always; }
+    
+    h2 { 
+      font-size: 26pt; 
+      color: #0369a1; 
+      border-left: 10px solid #0ea5e9; 
+      padding: 15px 0 15px 25px; 
+      margin-top: 0; 
+      margin-bottom: 1cm; 
+      page-break-before: always; 
+      page-break-after: avoid;
+      background: #f8fafc;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    /* First h2 on the first page doesn't need a page break if it's the very first thing */
+    /* But actually, for reports, it's safer to just always break before h2 */
+
+    h3 { 
+      font-size: 20pt; 
+      color: #0369a1; 
+      margin-top: 1.2cm; 
+      margin-bottom: 0.6cm; 
+      page-break-after: avoid; 
+      display: flex;
+      align-items: center;
+    }
+    
+    h3::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: #0ea5e9;
+      border-radius: 50%;
+      margin-right: 12px;
+    }
+
+    p { 
+      text-align: justify; 
+      line-height: 1.8; 
+      font-family: 'Lora', serif; 
+      font-size: 11.5pt; 
+      color: #334155;
+      margin-bottom: 0.8cm;
+    }
+
+    ul, ol {
+      margin-bottom: 0.8cm;
+      color: #334155;
+      font-family: 'Lora', serif;
+      font-size: 11.5pt;
+    }
+    
+    li { margin-bottom: 0.3cm; line-height: 1.6; }
+
     .page-break { page-break-before: always; }
-    pre { background: #1e1e1e; color: #e0e0e0; padding: 12px; border-radius: 4px; font-size: 9.5pt; white-space: pre-wrap; }
-    .diagram-container { margin: 20px 0; text-align: center; }
+    
+    pre { 
+      background: #0f172a; 
+      color: #f8fafc; 
+      padding: 20px; 
+      border-radius: 12px; 
+      font-size: 10pt; 
+      white-space: pre-wrap; 
+      margin: 1cm 0;
+      border: 1px solid rgba(255,255,255,0.05);
+      line-height: 1.5;
+    }
+    
+    code {
+      font-family: 'Inter', monospace;
+    }
+
+    .mermaid-wrapper {
+      margin: 1cm 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .diagram-container { margin: 0; text-align: center; width: 100%; }
     
     .cover-page { 
       height: 297mm; 
@@ -163,7 +241,25 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       <style>${style}</style>
       <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       <script>
-        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+        mermaid.initialize({ 
+          startOnLoad: true, 
+          theme: 'base',
+          themeVariables: {
+            primaryColor: '#e0f2fe',
+            primaryTextColor: '#0369a1',
+            primaryBorderColor: '#0ea5e9',
+            lineColor: '#0ea5e9',
+            secondaryColor: '#f0f9ff',
+            tertiaryColor: '#ffffff',
+            fontFamily: 'Inter, sans-serif',
+            fontSize: '14px',
+            mainBkg: '#ffffff',
+            nodeBorder: '#cbd5e1',
+            clusterBkg: '#f1f5f9',
+            titleColor: '#0f172a',
+            edgeLabelBackground: '#ffffff',
+          }
+        });
       </script>
     </head>
     <body>
@@ -208,7 +304,9 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
         </div>
       </div>
       <div class="report-container">
-        ${markdownHtml.replace(/<code class="language-mermaid">([\s\S]*?)<\/code>/g, '<div class="mermaid">$1</div>')}
+        <div class="content-page">
+          ${markdownHtml.replace(/<code class="language-mermaid">([\s\S]*?)<\/code>/g, '<div class="mermaid-wrapper"><div class="mermaid">$1</div></div>')}
+        </div>
       </div>
     </body>
     </html>
