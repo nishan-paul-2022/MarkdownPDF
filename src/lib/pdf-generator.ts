@@ -44,7 +44,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     .report-container { padding: 0; }
     
     h2 { 
-      font-size: 26pt; 
+      font-size: 24pt; 
       color: #0369a1; 
       border-left: 10px solid #0ea5e9; 
       padding: 15px 0 15px 25px; 
@@ -60,7 +60,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     /* But actually, for reports, it's safer to just always break before h2 */
 
     h3 { 
-      font-size: 20pt; 
+      font-size: 18pt; 
       color: #0369a1; 
       margin-top: 1.2cm; 
       margin-bottom: 0.6cm; 
@@ -209,67 +209,61 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       margin-bottom: 2cm;
     }
     .report-title {
-      font-size: 38px;
+      font-size: 34px;
       font-weight: 800;
       line-height: 1.2;
       margin-bottom: 20px;
       width: 100%;
       padding: 0 40px;
       box-sizing: border-box;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      /* Removed truncation for readability */
+      word-wrap: break-word;
     }
     .report-subtitle {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 600;
       opacity: 0.95;
       width: 100%;
       padding: 0 40px;
       box-sizing: border-box;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      /* Removed truncation */
+      word-wrap: break-word;
     }
     .course-info {
       margin-top: 1.5cm;
-      font-size: 18px;
+      font-size: 16px;
       width: 90%;
       border-bottom: 1px solid rgba(255,255,255,0.2);
       padding-bottom: 12px;
       text-align: center;
       box-sizing: border-box;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      word-wrap: break-word;
     }
-    .student-details {
-      margin-top: 1cm;
-      width: 70%;
-      padding: 30px;
-      box-sizing: border-box;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      backdrop-filter: blur(4px);
+    .content-page { 
+      /* Padding handled by PDF margins now */
+      padding: 0; 
+      page-break-after: always;
+      word-break: break-word;
     }
-    .details-row {
-      display: flex;
-      font-size: 18px;
-      margin-bottom: 12px;
-      text-align: left;
+
+    
+    .cover-page { 
+      min-height: 90vh; /* Relaxed height */
       width: 100%;
+      background-image: url('data:image/png;base64,${bgBase64}');
+      background-size: cover;
+      background-position: center;
+      color: white; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      text-align: center; 
+      padding: 2cm; 
+      page-break-after: always;
+      position: relative;
+      box-sizing: border-box;
     }
-    .details-label {
-      width: 160px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.8);
-    }
-    .details-value {
-      flex: 1;
-      font-weight: 500;
-      color: #ffffff;
-    }
+    /* ... other styles ... */
   `;
 
   const html = `
@@ -353,17 +347,24 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
 
   await page.setContent(html, { waitUntil: 'networkidle' });
 
-  // Wait for mermaid to finish rendering
-  await page.waitForTimeout(2000);
+  // Robust wait for mermaid
+  try {
+    await page.waitForSelector('.mermaid svg, .mermaid[data-processed="true"]', { timeout: 5000 });
+  } catch (e) {
+    console.log('Mermaid wait timeout, proceeding anyway...');
+  }
+  // Extra buffer
+  await page.waitForTimeout(1000);
 
   const pdf = await page.pdf({
     format: 'A4',
     printBackground: true,
-    margin: { top: '0', bottom: '0', left: '0', right: '0' },
+    // Standard Margins for A4 Report
+    margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' },
     displayHeaderFooter: true,
     headerTemplate: '<div></div>',
     footerTemplate: `
-      <div style="font-family: Arial; font-size: 8px; width: 100%; display: flex; justify-content: flex-end; padding: 5px 20px;">
+      <div style="font-family: 'Inter', sans-serif; font-size: 9px; width: 100%; display: flex; justify-content: flex-end; padding-right: 15mm; color: #64748b;">
         <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
       </div>`
   });
