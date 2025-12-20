@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, Maximize, ArrowLeftRight, ScrollText, Play } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, Maximize, ArrowLeftRight, ScrollText, Play, FileDown, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
@@ -27,6 +27,8 @@ interface MdPreviewProps {
   };
   className?: string;
   showToolbar?: boolean;
+  onDownload?: () => void;
+  isGenerating?: boolean;
 }
 
 type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
@@ -103,7 +105,7 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
-export const MdPreview = ({ content, metadata, className, showToolbar = true }: MdPreviewProps) => {
+export const MdPreview = ({ content, metadata, className, showToolbar = true, onDownload, isGenerating = false }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
@@ -549,6 +551,26 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true }: 
                 title={viewMode === 'single' ? "Enable Scroll" : "Single Page"}
               >
                 <ScrollText className="w-3 h-3" />
+              </Button>
+            </div>
+
+            <div className="w-px h-4 bg-slate-800 mx-0.5" />
+
+            {/* Download Action */}
+            <div className="flex items-center gap-0.5 bg-slate-800/50 rounded-lg p-0.5 border border-white/5">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onDownload}
+                disabled={isGenerating}
+                className="h-6 w-6 rounded-md hover:bg-white/10 text-slate-400 hover:text-primary disabled:opacity-50 transition-all active:scale-95"
+                title={isGenerating ? "Generating..." : "Download PDF"}
+              >
+                {isGenerating ? (
+                  <Loader2 className="w-3 h-3 animate-spin text-primary" />
+                ) : (
+                  <FileDown className="w-3 h-3" />
+                )}
               </Button>
             </div>
 

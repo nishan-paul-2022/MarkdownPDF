@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MdPreview } from '@/components/md-preview';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA } from '@/constants/default-content';
-import { ChevronDown, ChevronUp, FileDown, FileText, Play, Terminal, Upload, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileText, Upload, RotateCcw } from 'lucide-react';
 
 export default function Home() {
   const [content, setContent] = useState('');
@@ -107,39 +107,7 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2">
-            <input
-              type="file"
-              accept=".md"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <Button
-              variant="outline"
-              onClick={triggerFileUpload}
-              className="gap-2 border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200"
-            >
-              <Upload className="w-4 h-4" /> Upload MD
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleReset}
-              className="gap-2 border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200"
-            >
-              <RotateCcw className="w-4 h-4" /> Reset
-            </Button>
-            <Button
-              onClick={handleDownloadPdf}
-              disabled={isGenerating}
-              className="bg-primary text-primary-foreground hover:opacity-90 gap-2 border-none px-6"
-            >
-              {isGenerating ? (
-                <Terminal className="w-4 h-4 animate-spin" />
-              ) : (
-                <FileDown className="w-4 h-4" />
-              )}
-              {isGenerating ? 'Generating...' : 'Download PDF'}
-            </Button>
+            {/* Controls moved to Document Settings and Preview Toolbar */}
           </div>
         </div>
       </header>
@@ -149,17 +117,48 @@ export default function Home() {
         {/* Editor Side */}
         <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
           <div
-            className="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition-colors"
+            className="bg-slate-900/80 pl-4 pr-2 py-2 border-b border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition-colors group"
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
           >
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-400 uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-400 group-hover:text-slate-300 transition-colors uppercase tracking-wider">
               <FileText className="w-3.5 h-3.5" /> Document Settings
             </div>
-            {isSettingsOpen ? (
-              <ChevronUp className="w-4 h-4 text-slate-500" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-slate-500" />
-            )}
+
+            <div className="flex items-center gap-1">
+              <input
+                type="file"
+                accept=".md"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
+                className="h-7 px-2 text-[10px] font-medium uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              >
+                <Upload className="w-3 h-3 mr-1.5" /> Upload MD
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => { e.stopPropagation(); handleReset(); }}
+                className="h-7 px-2 text-[10px] font-medium uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              >
+                <RotateCcw className="w-3 h-3 mr-1.5" /> Reset Default
+              </Button>
+
+              <div className="w-px h-3 bg-slate-800 mx-1" />
+
+              <div className="p-1">
+                {isSettingsOpen ? (
+                  <ChevronUp className="w-4 h-4 text-slate-500" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-slate-500" />
+                )}
+              </div>
+            </div>
           </div>
 
           {isSettingsOpen && (
@@ -255,7 +254,13 @@ export default function Home() {
 
         {/* Preview Side */}
         <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/20">
-          <MdPreview content={content} metadata={metadata} showToolbar={true} />
+          <MdPreview
+            content={content}
+            metadata={metadata}
+            showToolbar={true}
+            onDownload={handleDownloadPdf}
+            isGenerating={isGenerating}
+          />
         </div>
       </div>
     </main>
