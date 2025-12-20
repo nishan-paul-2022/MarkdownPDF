@@ -30,32 +30,36 @@ export default function Home() {
     setMetadata(prev => ({ ...prev, [name]: value }));
   };
 
+  const generatePdfBlob = async () => {
+    const response = await fetch('/api/generate-pdf', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        markdown: content,
+        metadata: metadata
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate PDF');
+    }
+
+    return await response.blob();
+  };
+
   const handleDownloadPdf = async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          markdown: content,
-          metadata: metadata
-        }),
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'pki-report.pdf';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-      } else {
-        console.error('Failed to generate PDF');
-      }
+      const blob = await generatePdfBlob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'pki-report.pdf';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading PDF:', error);
     } finally {
@@ -258,6 +262,7 @@ export default function Home() {
             metadata={metadata}
             showToolbar={true}
             onDownload={handleDownloadPdf}
+            onGeneratePdf={generatePdfBlob}
             isGenerating={isGenerating}
           />
         </div>

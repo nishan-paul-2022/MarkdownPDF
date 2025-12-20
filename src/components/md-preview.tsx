@@ -10,6 +10,11 @@ import { cn } from '@/lib/utils';
 import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, Maximize, ArrowLeftRight, ScrollText, Eye, FileDown, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 
 
@@ -28,8 +33,11 @@ interface MdPreviewProps {
   className?: string;
   showToolbar?: boolean;
   onDownload?: () => void;
+  onGeneratePdf?: () => Promise<Blob>;
   isGenerating?: boolean;
 }
+
+type ViewMode = 'live' | 'preview';
 
 type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
 
@@ -223,7 +231,7 @@ const PageRenderer = React.memo(({ page, index, totalPages, metadata }: PageRend
 
 PageRenderer.displayName = 'PageRenderer';
 
-export const MdPreview = ({ content, metadata, className, showToolbar = true, onDownload, isGenerating = false }: MdPreviewProps) => {
+export const MdPreview = ({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
@@ -231,8 +239,49 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   const [zoomInput, setZoomInput] = useState('100%');
   const [fitWidthScale, setFitWidthScale] = useState(0.75);
   const [fitPageScale, setFitPageScale] = useState(0.5);
+  const [viewMode, setViewMode] = useState<ViewMode>('live');
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [numPages, setNumPages] = useState<number>(0);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
+
+  const handlePdfLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+  };
+
+  useEffect(() => {
+    if (viewMode === 'preview' && onGeneratePdf && !pdfBlobUrl) {
+      setIsPdfLoading(true);
+      onGeneratePdf()
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          setPdfBlobUrl(url);
+        })
+        .catch(err => console.error(err))
+        .finally(() => setIsPdfLoading(false));
+    }
+  }, [viewMode, onGeneratePdf, pdfBlobUrl]);
+
+  // Cleanup blob url
+  useEffect(() => {
+    return () => {
+      if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
+    };
+  }, [pdfBlobUrl]);
+
+  // Reset PDF when content changes? 
+  // Maybe explicit refresh is better to avoid spamming the server.
+  // We'll reset blob url when content changes if we want auto-update, but that's expensive.
+  // For now, let's keep it manual toggle or explicit update.
+  useEffect(() => {
+    if (viewMode === 'preview') {
+      // Invalidate PDF if content changes? 
+      // For now, let's force user to toggle or click refresh if we add one.
+      // Or we can just let them toggle back and forth.
+      setPdfBlobUrl(null); // Force regenerate on content change if in preview mode?
+    }
+  }, [content, metadata]); // Be careful with this deps array, metadata object reference might change often.
 
   const handleZoomChange = useCallback((delta: number) => {
     setZoomMode('custom');
@@ -248,7 +297,9 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   }, [zoomMode, fitPageScale, fitWidthScale]);
 
   // Split content by page break marker --- and H2 headers
+  /* eslint-disable react-hooks/exhaustive-deps */
   const allPages = React.useMemo(() => {
+    if (viewMode === 'preview') return []; // Don't calculate for PDF mode
     const rawContent = content || '';
     // First split by explicit page breaks
     const chunks = rawContent.split(/\n---\n/);
@@ -300,9 +351,9 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     });
 
     return processedPages;
-  }, [content, metadata]);
+  }, [content, metadata, viewMode]);
 
-  const totalPages = allPages.length;
+  const totalPages = viewMode === 'preview' ? numPages : allPages.length;
 
   // Update page input when current page changes
   useEffect(() => {
@@ -524,7 +575,32 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         <div className="flex items-center justify-between px-4 py-2 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
           {/* Left: Label */}
           <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
-            <Eye className="w-3.5 h-3.5" /> PDF
+            <Eye className="w-3.5 h-3.5" />
+            Preview Mode:
+            <div className="flex bg-slate-950/50 rounded-md p-1 border border-white/10 ml-3 shadow-inner">
+              <button
+                onClick={() => setViewMode('live')}
+                className={cn(
+                  "px-3 py-1 rounded-sm text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer",
+                  viewMode === 'live'
+                    ? "bg-primary text-primary-foreground shadow-lg ring-1 ring-primary/50 transform scale-105"
+                    : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                )}
+              >
+                LIVE
+              </button>
+              <button
+                onClick={() => setViewMode('preview')}
+                className={cn(
+                  "px-3 py-1 rounded-sm text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer",
+                  viewMode === 'preview'
+                    ? "bg-primary text-primary-foreground shadow-lg ring-1 ring-primary/50 transform scale-105"
+                    : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                )}
+              >
+                PRINT
+              </button>
+            </div>
           </div>
 
           {/* Right: Controls */}
@@ -678,16 +754,48 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             willChange: 'transform'
           }}
         >
-          {allPages.map((page, index) => (
-            <div
-              key={index}
-              ref={index === 0 ? pageRef : null}
-              data-page-index={index}
-              className="shadow-xl"
-            >
-              {renderPage(page, index)}
+
+          {viewMode === 'live' ? (
+            allPages.map((page, index) => (
+              <div
+                key={index}
+                ref={index === 0 ? pageRef : null}
+                data-page-index={index}
+                className="shadow-xl"
+              >
+                {renderPage(page, index)}
+              </div>
+            ))
+          ) : (
+            <div className="relative">
+              {isPdfLoading && (
+                <div className="absolute inset-0 flex items-center justify-center min-h-[50vh] text-slate-400">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                  <span className="ml-2">Rendering PDF...</span>
+                </div>
+              )}
+              {pdfBlobUrl && (
+                <Document
+                  file={pdfBlobUrl}
+                  onLoadSuccess={handlePdfLoadSuccess}
+                  className="flex flex-col gap-4"
+                  loading={<div className="h-[800px] w-[600px] animate-pulse bg-slate-800/20 rounded-lg" />}
+                >
+                  {Array.from(new Array(numPages), (el, index) => (
+                    <div key={`page_${index + 1}`} data-page-index={index} className="shadow-xl">
+                      <Page
+                        pageNumber={index + 1}
+                        width={A4_WIDTH_PX}
+                        renderTextLayer={false}
+                        renderAnnotationLayer={false}
+                        className="bg-white"
+                      />
+                    </div>
+                  ))}
+                </Document>
+              )}
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
