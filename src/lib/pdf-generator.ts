@@ -123,8 +123,9 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       font-family: 'Inter', monospace;
     }
 
+
     .mermaid-wrapper {
-      margin: 0.8cm 0;
+      margin: 0.5cm 0;
       padding: 0;
       display: flex;
       justify-content: center;
@@ -132,10 +133,21 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       page-break-inside: avoid;
     }
     
+    /* Intermediate container from Mermaid */
+    .mermaid {
+      display: flex !important;
+      justify-content: center !important;
+      width: 100% !important;
+    }
+    
     /* Ensure only SVGs are visible and scaled */
     .mermaid svg {
        max-width: 100% !important;
+       max-height: 11cm !important; /* More aggressive cap to travel with Headers */
        height: auto !important;
+       width: auto !important;
+       display: block;
+       margin: 0 auto;
     }
 
     .diagram-container { margin: 0; text-align: center; width: 100%; }
