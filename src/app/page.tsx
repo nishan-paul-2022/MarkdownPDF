@@ -95,22 +95,16 @@ export default function Home() {
   return (
     <main className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-900/50 p-4 shrink-0">
-        <div className="max-w-full mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-1 rounded-lg">
-              <Image src="/brand-logo.svg" alt="Logo" width={40} height={40} className="w-10 h-10 object-contain" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">MarkdownPDF</h1>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Controls moved to Document Settings and Preview Toolbar */}
-          </div>
+      {/* Floating Branding Island */}
+      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-2 bg-slate-900/20 backdrop-blur-md border border-white/5 rounded-full shadow-2xl transition-all hover:bg-slate-900/40 hover:border-white/10 hover:scale-105 duration-300 group select-none">
+        <div className="relative">
+          <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <Image src="/brand-logo.svg" alt="Logo" width={24} height={24} className="w-6 h-6 object-contain relative z-10 opacity-90 group-hover:opacity-100 transition-opacity" />
         </div>
-      </header>
+        <h1 className="text-sm font-medium tracking-wide text-slate-300/90 group-hover:text-slate-100 transition-colors">
+          MarkdownPDF
+        </h1>
+      </div>
 
       {/* Main Content Area - Full Height */}
       <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden">
