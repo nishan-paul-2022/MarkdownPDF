@@ -393,7 +393,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
   // Robust wait for mermaid
   try {
     await page.waitForSelector('.mermaid svg, .mermaid[data-processed="true"]', { timeout: 5000 });
-  } catch (e) {
+  } catch {
     console.log('Mermaid wait timeout, proceeding anyway...');
   }
   // Extra buffer

@@ -8,6 +8,13 @@ export const MermaidDiagram = ({ chart }: MermaidProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [prevChart, setPrevChart] = useState(chart);
+
+  if (chart !== prevChart) {
+    setPrevChart(chart);
+    setIsLoaded(false);
+    setError(null);
+  }
 
   useEffect(() => {
     mermaid.initialize({
@@ -35,8 +42,6 @@ export const MermaidDiagram = ({ chart }: MermaidProps) => {
 
   useEffect(() => {
     if (ref.current) {
-      setIsLoaded(false);
-      setError(null);
       const id = `mermaid-${Math.random().toString(36).substring(2, 11)}`;
 
       // Clear previous content

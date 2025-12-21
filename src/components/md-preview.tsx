@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, ScrollText, Eye, DownloadCloud, Loader2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import dynamic from 'next/dynamic';
@@ -42,7 +42,6 @@ type ViewMode = 'live' | 'preview';
 
 type ZoomMode = 'fit-page' | 'fit-width' | 'custom';
 
-const ZOOM_LEVELS = [25, 50, 75, 100, 125, 150, 200, 300, 400];
 const A4_WIDTH_PX = 794; // 210mm at 96 DPI
 const A4_HEIGHT_PX = 1123; // 297mm at 96 DPI
 
@@ -145,10 +144,10 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   const [numPages, setNumPages] = useState<number>(0);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [paginatedPages, setPaginatedPages] = useState<string[]>([]);
-  const [renderKey, setRenderKey] = useState(0);
+  const [renderKey] = useState(0);
+  const [isPdfReady, setIsPdfReady] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const pageRef = useRef<HTMLDivElement>(null);
   const stagingRef = useRef<HTMLDivElement>(null);
 
   // Memoized components for ReactMarkdown to use in Staging Area
@@ -170,12 +169,12 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         </code>
       );
     },
-    pre: ({ children }: any) => (
+    pre: ({ children }: React.ComponentPropsWithoutRef<'pre'>) => (
       <pre className="my-[0.8cm] relative bg-[#0f172a] text-[#f8fafc] p-[15px] rounded-lg overflow-x-auto text-[9pt] font-mono shadow-sm border border-white/5 leading-[1.45]">
         {children}
       </pre>
     ),
-    h2: ({ children, ...props }: any) => {
+    h2: ({ children, ...props }: React.ComponentPropsWithoutRef<'h2'>) => {
       const id = children?.toString().toLowerCase().replace(/\s+/g, '-');
       return (
         <h2 id={id} className="text-[24pt] text-[#0369a1] font-sans font-bold mt-0 mb-[0.8cm] border-l-[10px] border-[#0ea5e9] pl-[20px] py-[10px] bg-[#f8fafc] rounded-r-lg leading-[1.3]" {...props}>
@@ -183,53 +182,54 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         </h2>
       );
     },
-    h3: ({ children }: any) => (
+    h3: ({ children }: React.ComponentPropsWithoutRef<'h3'>) => (
       <h3 className="text-[16pt] text-[#0369a1] font-sans font-bold mt-[1cm] mb-[0.5cm] flex items-center leading-[1.4]">
         <span className="w-[6px] h-[6px] bg-[#0ea5e9] rounded-full mr-[10px] inline-block shrink-0"></span>
         {children}
       </h3>
     ),
-    p: ({ children }: any) => (
+    p: ({ children }: React.ComponentPropsWithoutRef<'p'>) => (
       <p className="mb-[0.6cm] leading-[1.6] text-[#334155] text-justify text-[11pt] font-normal font-serif">
         {children}
       </p>
     ),
-    ul: ({ children }: any) => (
+    ul: ({ children }: React.ComponentPropsWithoutRef<'ul'>) => (
       <ul className="list-disc mb-[0.6cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
         {children}
       </ul>
     ),
-    ol: ({ children }: any) => (
+    ol: ({ children }: React.ComponentPropsWithoutRef<'ol'>) => (
       <ol className="list-decimal mb-[0.6cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
         {children}
       </ol>
     ),
-    li: ({ children }: any) => (
+    li: ({ children }: React.ComponentPropsWithoutRef<'li'>) => (
       <li className="mb-[0.2cm] pl-2">
         {children}
       </li>
     ),
-    table: ({ children }: any) => (
+    table: ({ children }: React.ComponentPropsWithoutRef<'table'>) => (
       <div className="my-[0.8cm] w-full">
         <table className="w-full border-collapse text-[10pt] font-sans">
           {children}
         </table>
       </div>
     ),
-    th: ({ children }: any) => (
+    th: ({ children }: React.ComponentPropsWithoutRef<'th'>) => (
       <th className="bg-[#f8fafc] text-[#0369a1] font-bold uppercase tracking-[0.05em] text-[8.5pt] p-[10px] border-b-2 border-[#e2e8f0] text-left">
         {children}
       </th>
     ),
-    td: ({ children }: any) => (
+    td: ({ children }: React.ComponentPropsWithoutRef<'td'>) => (
       <td className="p-[10px] border-b border-[#f1f5f9] color-[#475569]">
         {children}
       </td>
     ),
-    img: ({ src, alt }: any) => (
+    img: ({ src, alt }: React.ComponentPropsWithoutRef<'img'>) => (
+      /* eslint-disable-next-line @next/next/no-img-element */
       <img src={src} alt={alt} className="max-w-full h-auto rounded-lg mx-auto my-[1cm] block" />
     ),
-    blockquote: ({ children }: any) => (
+    blockquote: ({ children }: React.ComponentPropsWithoutRef<'blockquote'>) => (
       <blockquote className="border-l-4 border-slate-300 pl-4 italic text-slate-600 my-4">
         {children}
       </blockquote>
@@ -239,6 +239,10 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   const handlePdfLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
   };
+
+  const onPdfRenderSuccess = useCallback(() => {
+    setIsPdfReady(true);
+  }, []);
 
   useEffect(() => {
     if (viewMode === 'preview' && onGeneratePdf && !pdfBlobUrl) {
@@ -263,6 +267,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   useEffect(() => {
     const timer = setTimeout(() => {
       setPdfBlobUrl(null);
+      setIsPdfReady(false);
     }, 1500); // Wait 1.5 seconds after last change before invalidating PDF
 
     return () => clearTimeout(timer);
@@ -275,14 +280,9 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     }
   }, [isMetadataValid, viewMode]);
 
-  // Reset to page 1 when switching view modes and reset numPages when leaving preview
+  // Ensure observer is refreshed when view mode changes
   useEffect(() => {
-    setCurrentPage(1);
-    if (viewMode === 'live') {
-      setNumPages(0);
-    }
-    // Increment render key to force re-observation
-    setRenderKey(prev => prev + 1);
+    // No longer resetting currentPage or renderKey here to allow for smooth transitions
   }, [viewMode]);
 
   // Client-side Pagination Logic
@@ -341,11 +341,13 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     return () => clearTimeout(timer);
   }, [content, metadata]);
 
-  const totalPages = viewMode === 'preview' 
-    ? numPages 
-    : (metadata 
-        ? (content.trim() ? paginatedPages.length + 1 : 1) 
-        : Math.max(1, paginatedPages.length));
+  const isPdfRendering = viewMode === 'preview' && (isPdfLoading || !isPdfReady);
+
+  const totalPages = viewMode === 'preview'
+    ? numPages
+    : (metadata
+      ? (content.trim() ? paginatedPages.length + 1 : 1)
+      : Math.max(1, paginatedPages.length));
 
   const handleZoomChange = useCallback((delta: number) => {
     setZoomMode('custom');
@@ -416,14 +418,17 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       },
       { root: containerRef.current, threshold: [0, 0.3, 0.5, 0.7, 1.0] }
     );
-    
+
     // Small delay to ensure DOM is ready, especially after mode switch
     const timeoutId = setTimeout(() => {
       if (!containerRef.current) return;
-      const pageElements = containerRef.current.querySelectorAll('[data-page-index]');
+
+      // Only observe pages belonging to the current view mode to avoid confusion
+      const selector = viewMode === 'live' ? '.live-view-page' : '.pdf-view-page';
+      const pageElements = containerRef.current.querySelectorAll(selector);
       pageElements.forEach((el) => observer.observe(el));
     }, 200);
-    
+
     return () => {
       clearTimeout(timeoutId);
       observer.disconnect();
@@ -478,7 +483,51 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   };
 
   return (
-    <div className={cn("pdf-viewer flex flex-col h-full bg-slate-900/50", className)}>
+    <div className={cn("pdf-viewer relative flex flex-col h-full bg-slate-900/50", className)}>
+      {/* Global Loader Overlay - Centered in viewport, independent of scroll position */}
+      <div className={cn(
+        "absolute inset-0 z-50 flex items-center justify-center transition-all duration-500 ease-in-out backdrop-blur-[2px] bg-slate-900/5",
+        showToolbar ? "top-12" : "top-0",
+        isPdfRendering ? "opacity-100" : "opacity-0 pointer-events-none"
+      )}>
+        <div className="relative flex flex-col items-center gap-8 -translate-y-6">
+          {/* Radial gradient glow background */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-64 h-64 bg-gradient-radial from-primary/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
+          </div>
+
+          {/* Orbital spinner system */}
+          <div className="relative w-24 h-24 scale-110">
+            {/* Outer ring */}
+            <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin" style={{ animationDuration: '3s' }} />
+
+            {/* Middle ring */}
+            <div className="absolute inset-2 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
+
+            {/* Inner glow */}
+            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/40 to-blue-500/40 blur-md animate-pulse" />
+
+            {/* Center spinner */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="w-10 h-10 animate-spin text-primary drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" style={{ animationDuration: '1.5s' }} />
+            </div>
+
+            {/* Floating particles */}
+            <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+            <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+            <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
+          </div>
+
+          {/* Animated text */}
+          <div className="relative text-center">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-xl" />
+            <span className="relative text-xl font-bold bg-gradient-to-r from-slate-200 via-primary to-slate-200 bg-clip-text text-transparent animate-pulse bg-[length:200%_100%]" style={{ animation: 'pulse 2s ease-in-out infinite, shimmer 3s linear infinite' }}>
+              Rendering PDF...
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Hidden Staging Area */}
       <div
         className="fixed top-0 left-0 overflow-hidden pointer-events-none opacity-0 -z-50 bg-white"
@@ -498,27 +547,27 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             <Eye className="w-3.5 h-3.5" />
             PDF
             <div className="flex bg-slate-950/40 rounded-lg p-1 border border-white/5 ml-3 shadow-inner">
-              <button 
-                onClick={() => setViewMode('live')} 
+              <button
+                onClick={() => setViewMode('live')}
                 className={cn(
                   "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer border",
-                  viewMode === 'live' 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                  viewMode === 'live'
+                    ? "bg-white/20 text-white border-white/20 shadow-inner"
                     : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
                 )}
               >
                 LIVE
               </button>
-              <button 
-                onClick={() => isMetadataValid && setViewMode('preview')} 
+              <button
+                onClick={() => isMetadataValid && setViewMode('preview')}
                 disabled={!isMetadataValid}
                 title={!isMetadataValid ? "Fill in all fields to view print preview" : "View print preview"}
                 className={cn(
                   "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 border ml-1",
-                  !isMetadataValid 
-                    ? "text-slate-700 border-transparent cursor-not-allowed opacity-40" 
-                    : viewMode === 'preview' 
-                      ? "bg-white/20 text-white border-white/20 shadow-inner cursor-pointer" 
+                  !isMetadataValid
+                    ? "text-slate-700 border-transparent cursor-not-allowed opacity-40"
+                    : viewMode === 'preview'
+                      ? "bg-white/20 text-white border-white/20 shadow-inner cursor-pointer"
                       : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100 cursor-pointer"
                 )}
               >
@@ -532,7 +581,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(1)}
-                disabled={currentPage === 1}
+                disabled={isPdfRendering || currentPage === 1}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="First Page"
               >
@@ -542,27 +591,33 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(currentPage - 1)}
-                disabled={currentPage === 1}
+                disabled={isPdfRendering || currentPage === 1}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Previous Page"
               >
                 <ChevronUp className="w-4 h-4" />
               </Button>
               <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1.5 min-w-[3.5rem] justify-center">
-                <Input 
-                  type="text" 
-                  value={pageInput} 
-                  onChange={handlePageInputChange} 
-                  onBlur={handlePageInputSubmit} 
-                  className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all" 
-                />
-                <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
+                {isPdfRendering ? (
+                  <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
+                ) : (
+                  <>
+                    <Input
+                      type="text"
+                      value={pageInput}
+                      onChange={handlePageInputChange}
+                      onBlur={handlePageInputSubmit}
+                      className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all"
+                    />
+                    <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
+                  </>
+                )}
               </form>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                disabled={isPdfRendering || currentPage === totalPages || totalPages === 0}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Next Page"
               >
@@ -572,7 +627,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(totalPages)}
-                disabled={currentPage === totalPages}
+                disabled={isPdfRendering || currentPage === totalPages || totalPages === 0}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Last Page"
               >
@@ -615,23 +670,23 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
             <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
 
             <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
-              <button 
-                onClick={() => setZoomMode('fit-page')} 
+              <button
+                onClick={() => setZoomMode('fit-page')}
                 className={cn(
                   "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
-                  zoomMode === 'fit-page' 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                  zoomMode === 'fit-page'
+                    ? "bg-white/20 text-white border-white/20 shadow-inner"
                     : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
                 )}
               >
                 <Maximize className="w-3.5 h-3.5" />
               </button>
-              <button 
-                onClick={() => setZoomMode('fit-width')} 
+              <button
+                onClick={() => setZoomMode('fit-width')}
                 className={cn(
                   "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
-                  zoomMode === 'fit-width' 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                  zoomMode === 'fit-width'
+                    ? "bg-white/20 text-white border-white/20 shadow-inner"
                     : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
                 )}
               >
@@ -641,25 +696,25 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
 
             <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
 
-            <div 
+            <div
               title={!isMetadataValid ? "Fill in all fields to download PDF" : "Download PDF"}
               className={cn(
                 "inline-block",
                 (isGenerating || !isMetadataValid) && "cursor-not-allowed"
               )}
             >
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={onDownload} 
-                disabled={isGenerating || !isMetadataValid} 
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onDownload}
+                disabled={isGenerating || !isMetadataValid}
                 className={cn(
                   "h-8 w-8 rounded-md transition-all duration-200 active:scale-95 group/download relative border",
                   isGenerating || !isMetadataValid
-                    ? "opacity-50 cursor-not-allowed" 
+                    ? "opacity-50 cursor-not-allowed"
                     : "",
-                  isGenerating 
-                    ? "bg-white/20 text-white border-white/20 shadow-inner" 
+                  isGenerating
+                    ? "bg-white/20 text-white border-white/20 shadow-inner"
                     : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
                 )}
               >
@@ -674,31 +729,58 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         </div>
       )}
 
-      <div ref={containerRef} className={cn("flex-grow overflow-auto flex justify-center bg-slate-900/40 custom-scrollbar transition-all duration-200", zoomMode === 'fit-width' ? "p-0 overflow-x-hidden" : "p-4")}>
-        <div className="flex flex-col gap-4 origin-top" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
-          {viewMode === 'live' ? (
-            <>
-              {metadata && (
-                <div ref={currentPage === 1 ? pageRef : null} data-page-index={0} className="shadow-xl">
-                  <CoverPage metadata={metadata} />
+      <div ref={containerRef} className={cn("flex-grow overflow-auto flex justify-center bg-slate-900/40 custom-scrollbar", zoomMode === 'fit-width' ? "p-0 overflow-x-hidden" : "p-4")}>
+        <div className="grid grid-cols-1 grid-rows-1 origin-top transition-transform duration-300 ease-out" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
+
+          {/* Live View Layer */}
+          <div className={cn(
+            "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+            viewMode === 'live' ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}>
+            {metadata && (
+              <div data-page-index={0} className="live-view-page shadow-xl">
+                <CoverPage metadata={metadata} />
+              </div>
+            )}
+            {content.trim() && paginatedPages.length > 0 && (
+              paginatedPages.map((pageHtml, index) => (
+                <div key={index} data-page-index={index + (metadata ? 1 : 0)} className="live-view-page shadow-xl">
+                  <PageWrapper pageNumber={index + (metadata ? 2 : 1)} totalPages={totalPages}>
+                    <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }} dangerouslySetInnerHTML={{ __html: pageHtml }} />
+                  </PageWrapper>
+                </div>
+              ))
+            )}
+            {/* Filler for empty content case */}
+            {!metadata && !content.trim() && (
+              <div className="bg-white shadow-xl" style={{ width: A4_WIDTH_PX, height: A4_HEIGHT_PX }}></div>
+            )}
+          </div>
+
+          {/* PDF Preview Layer */}
+          <div className={cn(
+            "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+            viewMode === 'preview' ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}>
+            <div className="relative" key={`pdf-view-${renderKey}`}>
+              {/* Note: We keep PdfViewer mounted if pdfBlobUrl exists, even in live mode, for instant switch */}
+              {pdfBlobUrl && (
+                <div className={cn(
+                  "pdf-view-page-container transition-opacity duration-700 ease-in-out",
+                  isPdfReady ? "opacity-100" : "opacity-0"
+                )}>
+                  <PdfViewer
+                    key={renderKey}
+                    url={pdfBlobUrl}
+                    onLoadSuccess={handlePdfLoadSuccess}
+                    onRenderSuccess={onPdfRenderSuccess}
+                    width={A4_WIDTH_PX}
+                  />
                 </div>
               )}
-              {content.trim() && paginatedPages.length > 0 && (
-                paginatedPages.map((pageHtml, index) => (
-                  <div key={index} ref={currentPage === (index + (metadata ? 2 : 1)) ? pageRef : null} data-page-index={index + (metadata ? 1 : 0)} className="shadow-xl">
-                    <PageWrapper pageNumber={index + (metadata ? 2 : 1)} totalPages={totalPages}>
-                      <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }} dangerouslySetInnerHTML={{ __html: pageHtml }} />
-                    </PageWrapper>
-                  </div>
-                ))
-              )}
-            </>
-          ) : (
-            <div className="relative" key={`pdf-view-${renderKey}`}>
-              {isPdfLoading && <div className="absolute inset-0 flex items-center justify-center min-h-[50vh] text-slate-400"><Loader2 className="w-8 h-8 animate-spin" /><span className="ml-2">Rendering PDF...</span></div>}
-              {pdfBlobUrl && <PdfViewer key={renderKey} url={pdfBlobUrl} onLoadSuccess={handlePdfLoadSuccess} width={A4_WIDTH_PX} />}
             </div>
-          )}
+          </div>
+
         </div>
       </div>
     </div>
