@@ -328,7 +328,11 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     return () => clearTimeout(timer);
   }, [content, metadata]);
 
-  const totalPages = viewMode === 'preview' ? numPages : (metadata ? paginatedPages.length + 1 : Math.max(1, paginatedPages.length));
+  const totalPages = viewMode === 'preview' 
+    ? numPages 
+    : (metadata 
+        ? (content.trim() ? paginatedPages.length + 1 : 1) 
+        : Math.max(1, paginatedPages.length));
 
   const handleZoomChange = useCallback((delta: number) => {
     setZoomMode('custom');
@@ -657,7 +661,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                   <CoverPage metadata={metadata} />
                 </div>
               )}
-              {paginatedPages.length > 0 ? (
+              {content.trim() && paginatedPages.length > 0 && (
                 paginatedPages.map((pageHtml, index) => (
                   <div key={index} ref={currentPage === (index + (metadata ? 2 : 1)) ? pageRef : null} data-page-index={index + (metadata ? 1 : 0)} className="shadow-xl">
                     <PageWrapper pageNumber={index + 1} totalPages={totalPages - (metadata ? 1 : 0)}>
@@ -665,10 +669,6 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                     </PageWrapper>
                   </div>
                 ))
-              ) : (
-                <div className="flex items-center justify-center h-[20cm] bg-white rounded-sm text-slate-400">
-                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Preparing layout...</span>
-                </div>
               )}
             </>
           ) : (

@@ -377,11 +377,13 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
           </div>
         </div>
       </div>
+      ${markdownHtml.trim() ? `
       <div class="report-container">
         <div class="content-page">
           ${markdownHtml.replace(/<code class="language-mermaid">([\s\S]*?)<\/code>/g, '<div class="mermaid-wrapper"><div class="mermaid">$1</div></div>')}
         </div>
       </div>
+      ` : ''}
     </body>
     </html>
   `;
