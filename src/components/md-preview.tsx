@@ -74,7 +74,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
         </div>
 
         <div className="mt-[1cm] text-[15px] w-[85%] border-b border-white/20 pb-[10px] whitespace-nowrap overflow-hidden text-ellipsis">
-          Course: {metadata.course}
+          {metadata.course}
         </div>
 
         <div className="mt-[1cm] w-[70%] p-[20px] bg-white/10 border border-white/10 rounded-xl backdrop-blur-sm">

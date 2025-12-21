@@ -351,7 +351,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
         </div>
         
         <div class="course-info">
-          Course: ${metadata.course || 'CSE 802 - Information Security and Cryptography'}
+          ${metadata.course || 'CSE 802 - Information Security and Cryptography'}
         </div>
         
         <div class="student-details">
