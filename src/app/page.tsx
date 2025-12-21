@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MdPreview } from '@/components/md-preview';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA } from '@/constants/default-content';
-import { ChevronDown, ChevronUp, FileCode, Upload, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Home() {
@@ -17,7 +17,9 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
   const [showPdfControls, setShowPdfControls] = useState(true);
+  const [filename, setFilename] = useState('document.md');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   React.useEffect(() => {
     fetch(DEFAULT_MARKDOWN_PATH)
@@ -71,6 +73,7 @@ export default function Home() {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setFilename(file.name);
       const reader = new FileReader();
       reader.onload = (e) => {
         const text = e.target?.result;
@@ -92,8 +95,26 @@ export default function Home() {
       const text = await res.text();
       setContent(text);
       setMetadata(DEFAULT_METADATA);
+      setFilename('document.md');
     } catch (err) {
       console.error('Failed to reset content:', err);
+    }
+  };
+
+  const scrollToStart = () => {
+    if (textareaRef.current) {
+      textareaRef.current.scrollTop = 0;
+      textareaRef.current.setSelectionRange(0, 0);
+      textareaRef.current.focus();
+    }
+  };
+
+  const scrollToEnd = () => {
+    if (textareaRef.current) {
+      const length = textareaRef.current.value.length;
+      textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+      textareaRef.current.setSelectionRange(length, length);
+      textareaRef.current.focus();
     }
   };
 
@@ -133,8 +154,43 @@ export default function Home() {
           <div
             className="h-12 bg-slate-900/80 pl-4 pr-2 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
           >
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
-              <FileCode className="w-3.5 h-3.5" /> Markdown
+            <div className="flex items-center gap-3 flex-1">
+              <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
+                <FileCode className="w-3.5 h-3.5" /> Markdown
+              </div>
+
+              {/* Filename Input */}
+              <div className="flex items-center gap-2 flex-1 max-w-xs">
+                <input
+                  type="text"
+                  value={filename}
+                  onChange={(e) => setFilename(e.target.value)}
+                  className="flex-1 h-7 px-3 bg-slate-800/40 border border-white/5 rounded-md text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/30 transition-all shadow-inner"
+                  placeholder="filename.md"
+                />
+              </div>
+
+              {/* Navigation Controls */}
+              <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={scrollToStart}
+                  className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 border border-transparent hover:border-white/5"
+                  title="Jump to Start"
+                >
+                  <ChevronsUp className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={scrollToEnd}
+                  className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 border border-transparent hover:border-white/5"
+                  title="Jump to End"
+                >
+                  <ChevronsDown className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="flex items-center gap-1">
@@ -292,6 +348,7 @@ export default function Home() {
 
           <div className="flex-grow relative overflow-hidden">
             <Textarea
+              ref={textareaRef}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
