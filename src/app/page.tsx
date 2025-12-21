@@ -21,6 +21,24 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Get filename without extension for display
+  const getBaseName = (name: string) => {
+    return name.replace(/\.md$/i, '');
+  };
+
+  // Update filename with .md extension
+  const handleFilenameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const baseName = e.target.value;
+    setFilename(baseName ? `${baseName}.md` : 'document.md');
+  };
+
+  // Calculate input width based on content
+  const getInputWidth = () => {
+    const baseName = getBaseName(filename);
+    const charCount = baseName.length || 8; // minimum 8 chars for "document"
+    return `${Math.max(charCount * 0.6, 5)}rem`; // ~0.6rem per character, min 5rem
+  };
+
   React.useEffect(() => {
     fetch(DEFAULT_MARKDOWN_PATH)
       .then(res => res.text())
@@ -152,48 +170,55 @@ export default function Home() {
         {/* Editor Side */}
         <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
           <div
-            className="h-12 bg-slate-900/80 pl-4 pr-2 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
+            className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
           >
-            <div className="flex items-center gap-3 flex-1">
+            {/* Left Section - Label & Filename Badge */}
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
                 <FileCode className="w-3.5 h-3.5" /> Markdown
               </div>
 
-              {/* Filename Input */}
-              <div className="flex items-center gap-2 flex-1 max-w-xs">
+              {/* Filename Badge */}
+              <div className="group flex items-center gap-1.5 px-3 py-1 bg-slate-800/50 hover:bg-slate-800/70 border border-white/5 hover:border-white/10 rounded-full transition-all duration-200">
                 <input
                   type="text"
-                  value={filename}
-                  onChange={(e) => setFilename(e.target.value)}
-                  className="flex-1 h-7 px-3 bg-slate-800/40 border border-white/5 rounded-md text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/30 transition-all shadow-inner"
-                  placeholder="filename.md"
+                  value={getBaseName(filename)}
+                  onChange={handleFilenameChange}
+                  style={{ width: getInputWidth() }}
+                  className="bg-transparent border-none outline-none text-xs text-slate-300 placeholder:text-slate-500 transition-all duration-200"
+                  placeholder="document"
                 />
+                <FileCode className="w-3 h-3 text-slate-500 group-hover:text-slate-400 transition-colors" />
               </div>
+            </div>
 
+            {/* Right Section - Actions & Controls */}
+            <div className="flex items-center gap-2">
               {/* Navigation Controls */}
-              <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+              <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-lg p-0.5 border border-white/5">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={scrollToStart}
-                  className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 border border-transparent hover:border-white/5"
-                  title="Jump to Start"
+                  className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
+                  title="Jump to Start (Ctrl+Home)"
                 >
-                  <ChevronsUp className="w-4 h-4" />
+                  <ChevronsUp className="w-3.5 h-3.5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={scrollToEnd}
-                  className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 border border-transparent hover:border-white/5"
-                  title="Jump to End"
+                  className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
+                  title="Jump to End (Ctrl+End)"
                 >
-                  <ChevronsDown className="w-4 h-4" />
+                  <ChevronsDown className="w-3.5 h-3.5" />
                 </Button>
               </div>
-            </div>
 
-            <div className="flex items-center gap-1">
+              <div className="w-px h-4 bg-slate-700/50" />
+
+              {/* File Actions */}
               <input
                 type="file"
                 accept=".md"
@@ -205,29 +230,30 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md border border-transparent hover:border-white/5"
+                className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
               >
-                <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload MD
+                <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md border border-transparent hover:border-white/5"
+                className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
               >
-                <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Reset Default
+                <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Reset
               </Button>
 
-              <div className="w-px h-3 bg-slate-800 mx-1" />
+              <div className="w-px h-4 bg-slate-700/50" />
 
+              {/* Settings Toggle */}
               <div
                 className={cn(
                   "h-7 w-7 cursor-pointer rounded-md transition-all duration-200 active:scale-95 group flex items-center justify-center border",
                   isSettingsOpen
                     ? "bg-white/20 text-white border-white/20 shadow-inner"
-                    : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200"
+                    : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-200 hover:border-white/5"
                 )}
-                title={isSettingsOpen ? "Hide Markdown Options" : "Show Markdown Options"}
+                title={isSettingsOpen ? "Hide Metadata" : "Show Metadata"}
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
               >
                 {isSettingsOpen ? (
