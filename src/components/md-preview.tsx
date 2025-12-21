@@ -80,15 +80,18 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
         <div className="mt-[1cm] w-[70%] p-[20px] bg-white/10 border border-white/10 rounded-xl backdrop-blur-sm">
           <div className="space-y-[8px]">
             {[
-              { label: 'Name:', value: metadata.name },
-              { label: 'Roll No:', value: metadata.roll },
-              { label: 'Reg. No:', value: metadata.reg },
-              { label: 'Batch:', value: metadata.batch },
-              { label: 'Submission Date:', value: metadata.date },
+              { label: 'Name', value: metadata.name },
+              { label: 'Roll No', value: metadata.roll },
+              { label: 'Reg. No', value: metadata.reg },
+              { label: 'Batch', value: metadata.batch },
+              { label: 'Submission Date', value: metadata.date },
             ].map((detail, idx) => (
               <div key={idx} className="flex text-left text-[14px]">
-                <div className="w-[40%] font-semibold text-white/90">{detail.label}</div>
-                <div className="w-[60%] font-medium text-white">{detail.value}</div>
+                <div className="w-[42%] font-semibold text-white/90 flex justify-between">
+                  {detail.label}
+                  <span className="mr-2">:</span>
+                </div>
+                <div className="w-[58%] font-medium text-white pl-2">{detail.value}</div>
               </div>
             ))}
           </div>
@@ -257,9 +260,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   }, [pdfBlobUrl]);
 
   useEffect(() => {
-    if (viewMode === 'preview') {
-      setPdfBlobUrl(null);
-    }
+    setPdfBlobUrl(null);
   }, [content, metadata]);
 
   // Client-side Pagination Logic
