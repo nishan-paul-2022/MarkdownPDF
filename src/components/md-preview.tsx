@@ -275,14 +275,9 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     }
   }, [isMetadataValid, viewMode]);
 
-  // Reset to page 1 when switching view modes and reset numPages when leaving preview
+  // Ensure observer is refreshed when view mode changes
   useEffect(() => {
-    setCurrentPage(1);
-    if (viewMode === 'live') {
-      setNumPages(0);
-    }
-    // Increment render key to force re-observation
-    setRenderKey(prev => prev + 1);
+    // No longer resetting currentPage or renderKey here to allow for smooth transitions
   }, [viewMode]);
 
   // Client-side Pagination Logic
@@ -422,7 +417,10 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     // Small delay to ensure DOM is ready, especially after mode switch
     const timeoutId = setTimeout(() => {
       if (!containerRef.current) return;
-      const pageElements = containerRef.current.querySelectorAll('[data-page-index]');
+
+      // Only observe pages belonging to the current view mode to avoid confusion
+      const selector = viewMode === 'live' ? '.live-view-page' : '.pdf-view-page';
+      const pageElements = containerRef.current.querySelectorAll(selector);
       pageElements.forEach((el) => observer.observe(el));
     }, 200);
 
@@ -682,29 +680,42 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         </div>
       )}
 
-      <div ref={containerRef} className={cn("flex-grow overflow-auto flex justify-center bg-slate-900/40 custom-scrollbar transition-all duration-200", zoomMode === 'fit-width' ? "p-0 overflow-x-hidden" : "p-4")}>
-        <div className="flex flex-col gap-4 origin-top" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
-          {viewMode === 'live' ? (
-            <>
-              {metadata && (
-                <div ref={currentPage === 1 ? pageRef : null} data-page-index={0} className="shadow-xl">
-                  <CoverPage metadata={metadata} />
+      <div ref={containerRef} className={cn("flex-grow overflow-auto flex justify-center bg-slate-900/40 custom-scrollbar", zoomMode === 'fit-width' ? "p-0 overflow-x-hidden" : "p-4")}>
+        <div className="grid grid-cols-1 grid-rows-1 origin-top transition-transform duration-300 ease-out" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
+
+          {/* Live View Layer */}
+          <div className={cn(
+            "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+            viewMode === 'live' ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}>
+            {metadata && (
+              <div data-page-index={0} className="live-view-page shadow-xl">
+                <CoverPage metadata={metadata} />
+              </div>
+            )}
+            {content.trim() && paginatedPages.length > 0 && (
+              paginatedPages.map((pageHtml, index) => (
+                <div key={index} data-page-index={index + (metadata ? 1 : 0)} className="live-view-page shadow-xl">
+                  <PageWrapper pageNumber={index + (metadata ? 2 : 1)} totalPages={totalPages}>
+                    <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }} dangerouslySetInnerHTML={{ __html: pageHtml }} />
+                  </PageWrapper>
                 </div>
-              )}
-              {content.trim() && paginatedPages.length > 0 && (
-                paginatedPages.map((pageHtml, index) => (
-                  <div key={index} ref={currentPage === (index + (metadata ? 2 : 1)) ? pageRef : null} data-page-index={index + (metadata ? 1 : 0)} className="shadow-xl">
-                    <PageWrapper pageNumber={index + (metadata ? 2 : 1)} totalPages={totalPages}>
-                      <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }} dangerouslySetInnerHTML={{ __html: pageHtml }} />
-                    </PageWrapper>
-                  </div>
-                ))
-              )}
-            </>
-          ) : (
+              ))
+            )}
+            {/* Filler for empty content case */}
+            {!metadata && !content.trim() && (
+              <div className="bg-white shadow-xl" style={{ width: A4_WIDTH_PX, height: A4_HEIGHT_PX }}></div>
+            )}
+          </div>
+
+          {/* PDF Preview Layer */}
+          <div className={cn(
+            "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+            viewMode === 'preview' ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}>
             <div className="relative" key={`pdf-view-${renderKey}`}>
-              {isPdfLoading && (
-                <div className="absolute inset-0 flex items-center justify-center min-h-[50vh] z-10">
+              {isPdfRendering && (
+                <div className="absolute inset-0 flex items-center justify-center min-h-[50vh] z-10 transition-opacity duration-300">
                   <div className="relative flex flex-col items-center gap-8">
                     {/* Radial gradient glow background */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -743,9 +754,15 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                   </div>
                 </div>
               )}
-              {pdfBlobUrl && <PdfViewer key={renderKey} url={pdfBlobUrl} onLoadSuccess={handlePdfLoadSuccess} width={A4_WIDTH_PX} />}
+              {/* Note: We keep PdfViewer mounted if pdfBlobUrl exists, even in live mode, for instant switch */}
+              {pdfBlobUrl && (
+                <div className="pdf-view-page-container">
+                  <PdfViewer key={renderKey} url={pdfBlobUrl} onLoadSuccess={handlePdfLoadSuccess} width={A4_WIDTH_PX} />
+                </div>
+              )}
             </div>
-          )}
+          </div>
+
         </div>
       </div>
     </div>

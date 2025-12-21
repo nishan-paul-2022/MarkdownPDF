@@ -32,7 +32,7 @@ export default function PdfViewer({ url, width, onLoadSuccess }: PdfViewerProps)
             loading={<div className="h-[800px] w-[600px] animate-pulse bg-slate-800/20 rounded-lg" />}
         >
             {Array.from(new Array(numPages), (el, index) => (
-                <div key={`page_${index + 1}`} data-page-index={index} className="shadow-xl">
+                <div key={`page_${index + 1}`} data-page-index={index} className="pdf-view-page shadow-xl">
                     <Page
                         pageNumber={index + 1}
                         width={width}
