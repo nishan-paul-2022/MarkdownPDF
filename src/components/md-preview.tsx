@@ -299,6 +299,42 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
 
       const children = Array.from(stagingRef.current.children);
 
+      const isCaption = (el: HTMLElement, nextEl?: HTMLElement): boolean => {
+        // Tag-based captions (headings)
+        if (/^H[1-6]$/.test(el.tagName)) return true;
+        
+        // Potential "straight text" captions: short paragraphs followed by a block element
+        if (nextEl && el.tagName === 'P') {
+          const text = el.innerText || el.textContent || '';
+          const isShort = text.length > 0 && text.length < 120;
+          const capturesBlock = /^(IMG|TABLE|PRE|DIV)$/.test(nextEl.tagName) || 
+                               nextEl.querySelector('img, table, pre, .mermaid');
+          return isShort && !!capturesBlock;
+        }
+        
+        return false;
+      };
+
+      const getGroupHeight = (startIndex: number): number => {
+        let groupHeight = 0;
+        let j = startIndex;
+        while (j < children.length) {
+          const child = children[j] as HTMLElement;
+          const nextChild = children[j + 1] as HTMLElement;
+          const style = window.getComputedStyle(child);
+          const height = child.offsetHeight + (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
+          groupHeight += height;
+
+          // If this element is not a caption, we stop here.
+          // This means we've grouped the caption plus the first piece of content.
+          if (!isCaption(child, nextChild)) {
+            break;
+          }
+          j++;
+        }
+        return groupHeight;
+      };
+
       for (let i = 0; i < children.length; i++) {
         const child = children[i] as HTMLElement;
 
@@ -312,23 +348,28 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         }
 
         const style = window.getComputedStyle(child);
-        const marginTop = parseFloat(style.marginTop) || 0;
-        const marginBottom = parseFloat(style.marginBottom) || 0;
-        const elementHeight = child.offsetHeight + marginTop + marginBottom;
+        const elementHeight = child.offsetHeight + (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
 
-        if (currentHeight + elementHeight > MAX_HEIGHT) {
-          if (currentPageBucket.length > 0) {
-            pages.push(currentPageBucket.join(''));
-            currentPageBucket = [];
-            currentHeight = 0;
+        // Smart "Keep with Next" logic:
+        // If the current element is a heading, look ahead to see how much space the heading(s) + the first content block need.
+        let neededHeight = elementHeight;
+        if (/^H[1-6]$/.test(child.tagName)) {
+          const groupHeight = getGroupHeight(i);
+          // If the group height is within reasonable bounds (not larger than a whole page),
+          // we use it to decide if we should break now.
+          if (groupHeight <= MAX_HEIGHT) {
+            neededHeight = groupHeight;
           }
-
-          currentPageBucket.push(child.outerHTML);
-          currentHeight = elementHeight;
-        } else {
-          currentPageBucket.push(child.outerHTML);
-          currentHeight += elementHeight;
         }
+
+        if (currentHeight + neededHeight > MAX_HEIGHT && currentPageBucket.length > 0) {
+          pages.push(currentPageBucket.join(''));
+          currentPageBucket = [];
+          currentHeight = 0;
+        }
+
+        currentPageBucket.push(child.outerHTML);
+        currentHeight += elementHeight;
       }
 
       if (currentPageBucket.length > 0) {

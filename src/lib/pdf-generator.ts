@@ -53,16 +53,26 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     }
     .report-container { padding: 0; }
     
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid;
+      break-after: avoid;
+      break-after: avoid-page;
+    }
+
+    h1 {
+      font-size: 28pt;
+      color: #0369a1;
+      margin-bottom: 1cm;
+    }
+
     h2 { 
       font-size: 24pt; 
       color: #0369a1; 
       border-left: 10px solid #0ea5e9; 
       padding: 10px 0 10px 20px; 
-      margin-top: 0; 
+      margin-top: 1cm; 
       margin-bottom: 0.8cm; 
       page-break-before: always; 
-      break-after: avoid-page;
-      page-break-after: avoid;
       background: #f8fafc;
       border-radius: 0 8px 8px 0;
       line-height: 1.3;
@@ -73,8 +83,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       color: #0369a1; 
       margin-top: 1cm; 
       margin-bottom: 0.5cm; 
-      page-break-after: avoid; 
-      break-after: avoid;
       display: flex;
       align-items: center;
       line-height: 1.4;
@@ -88,6 +96,13 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       background-color: #0ea5e9;
       border-radius: 50%;
       margin-right: 10px;
+    }
+
+    h4, h5, h6 {
+      font-size: 13pt;
+      color: #0f172a;
+      margin-top: 0.8cm;
+      margin-bottom: 0.4cm;
     }
 
     p { 
@@ -109,9 +124,14 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       font-family: 'Lora', serif;
       font-size: 11pt;
       padding-left: 1.5cm;
+      page-break-inside: auto;
     }
     
-    li { margin-bottom: 0.2cm; line-height: 1.6; pl-2; }
+    li { 
+      margin-bottom: 0.2cm; 
+      line-height: 1.6;
+      page-break-inside: avoid;
+    }
 
     .page-break { page-break-before: always; }
     
@@ -126,6 +146,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       border: 1px solid rgba(255,255,255,0.05);
       line-height: 1.45;
       page-break-inside: avoid;
+      break-inside: avoid;
     }
     
     code {
@@ -144,6 +165,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       justify-content: center;
       width: 100%;
       page-break-inside: avoid;
+      break-inside: avoid;
     }
     
     /* Intermediate container from Mermaid */
@@ -190,6 +212,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     }
     tr {
       page-break-inside: avoid;
+      break-inside: avoid;
       page-break-after: auto;
     }
     thead {
@@ -202,6 +225,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       display: block;
       margin: 1cm auto;
       page-break-inside: avoid;
+      break-inside: avoid;
     }
     
     .content-page { 
@@ -337,6 +361,36 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
             titleColor: '#0f172a',
             edgeLabelBackground: '#ffffff',
           }
+        });
+
+        // Smart Caption/Content grouping for PDF
+        window.addEventListener('DOMContentLoaded', () => {
+          // Keep captions with their following block elements
+          document.querySelectorAll('p').forEach(p => {
+            const next = p.nextElementSibling;
+            if (next) {
+              const isShort = p.innerText.trim().length > 0 && p.innerText.trim().length < 120;
+              const isBlock = /^(IMG|TABLE|PRE|DIV)$/.test(next.tagName) || 
+                             next.querySelector('img, table, pre, .mermaid') ||
+                             next.classList.contains('mermaid-wrapper');
+              
+              if (isShort && isBlock) {
+                p.style.breakAfter = 'avoid';
+                p.style.pageBreakAfter = 'avoid';
+                // Also ensure the next element doesn't break inside if it's small-ish
+                if (next.offsetHeight < 500) {
+                  next.style.breakInside = 'avoid';
+                  next.style.pageBreakInside = 'avoid';
+                }
+              }
+            }
+          });
+
+          // Also ensure headings are always kept with next
+          document.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(h => {
+             h.style.breakAfter = 'avoid';
+             h.style.pageBreakAfter = 'avoid';
+          });
         });
       </script>
     </head>
