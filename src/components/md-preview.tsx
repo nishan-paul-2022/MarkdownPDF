@@ -393,7 +393,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     const pageElements = containerRef.current.querySelectorAll('[data-page-index]');
     pageElements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [paginatedPages, metadata, viewMode]); // Re-observe when pages change
+  }, [paginatedPages, metadata, viewMode, numPages]); // Re-observe when pages change or PDF loads
 
   const scrollToPage = (pageNum: number) => {
     if (pageNum >= 1 && pageNum <= totalPages && containerRef.current) {
