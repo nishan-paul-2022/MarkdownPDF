@@ -341,6 +341,8 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     return () => clearTimeout(timer);
   }, [content, metadata]);
 
+  const isPdfRendering = viewMode === 'preview' && (isPdfLoading || numPages === 0);
+
   const totalPages = viewMode === 'preview'
     ? numPages
     : (metadata
@@ -532,7 +534,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(1)}
-                disabled={currentPage === 1}
+                disabled={isPdfRendering || currentPage === 1}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="First Page"
               >
@@ -542,27 +544,33 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(currentPage - 1)}
-                disabled={currentPage === 1}
+                disabled={isPdfRendering || currentPage === 1}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Previous Page"
               >
                 <ChevronUp className="w-4 h-4" />
               </Button>
               <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1.5 min-w-[3.5rem] justify-center">
-                <Input
-                  type="text"
-                  value={pageInput}
-                  onChange={handlePageInputChange}
-                  onBlur={handlePageInputSubmit}
-                  className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all"
-                />
-                <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
+                {isPdfRendering ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
+                ) : (
+                  <>
+                    <Input
+                      type="text"
+                      value={pageInput}
+                      onChange={handlePageInputChange}
+                      onBlur={handlePageInputSubmit}
+                      className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all"
+                    />
+                    <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
+                  </>
+                )}
               </form>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                disabled={isPdfRendering || currentPage === totalPages || totalPages === 0}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Next Page"
               >
@@ -572,7 +580,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(totalPages)}
-                disabled={currentPage === totalPages}
+                disabled={isPdfRendering || currentPage === totalPages || totalPages === 0}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Last Page"
               >
