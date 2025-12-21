@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, ScrollText, Eye, DownloadCloud, Loader2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, ScrollText, Eye, DownloadCloud, Loader2, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import dynamic from 'next/dynamic';
@@ -600,7 +600,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
               </Button>
               <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1.5 min-w-[3.5rem] justify-center">
                 {isPdfRendering ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
+                  <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
                 ) : (
                   <>
                     <Input

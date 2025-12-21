@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MdPreview } from '@/components/md-preview';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA } from '@/constants/default-content';
-import { ChevronDown, ChevronUp, FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Home() {
@@ -197,7 +197,7 @@ export default function Home() {
                   className="bg-transparent border-none outline-none text-xs text-slate-300 placeholder:text-slate-500 transition-all duration-200"
                   placeholder="document"
                 />
-                <FileCode className="w-3 h-3 text-slate-500 group-hover:text-slate-400 transition-colors" />
+                <PencilLine className="w-3 h-3 text-slate-500 group-hover:text-slate-400 transition-colors" />
               </div>
             </div>
 
