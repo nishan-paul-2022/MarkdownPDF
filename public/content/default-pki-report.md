@@ -1,7 +1,3 @@
-# Public Key Infrastructure (PKI) - Implementation & Web Application Integration
-
----
-
 ## Table of Contents
 
 1. [Introduction](#introduction)
@@ -13,8 +9,6 @@
 7. [Conclusion](#conclusion)
 8. [Appendix: Quick Reference](#appendix-quick-reference-commands)
 
----
-
 ## Introduction
 
 In today's digital world, trust is everything. When you visit a website with HTTPS, send encrypted emails, or connect to a corporate VPN, there's an invisible infrastructure working behind the scenes to ensure that your communication is secure and that you're really talking to who you think you're talking to. This infrastructure is called **Public Key Infrastructure, or PKI**.
@@ -22,8 +16,6 @@ In today's digital world, trust is everything. When you visit a website with HTT
 Think of PKI as a digital identity system—similar to how governments issue passports to verify citizens' identities, PKI uses digital certificates to verify the identity of websites, users, devices, and services. But unlike a single government authority, PKI operates through a chain of trust, where multiple Certificate Authorities work together to establish and maintain security.
 
 This report documents my journey in building a fully functional Mini PKI from scratch. Throughout this implementation, I've learned not just the technical commands, but the reasoning behind each decision—why we need intermediate CAs, how certificate chains work, and why revocation mechanisms are critical for maintaining security.
-
----
 
 ## Understanding Public Key Infrastructure
 
@@ -71,8 +63,6 @@ PKI is the foundation of internet security. Every time you see the padlock icon 
 - **Code signing:** Verifying software hasn't been tampered with
 - **IoT devices:** Establishing secure device-to-device communication
 - **Enterprise networks:** Implementing Zero Trust security architectures
-
----
 
 ## PKI Architecture and Components
 
@@ -247,8 +237,6 @@ graph TD
     style E4 fill:#51cf66,color:#000
 ```
 
----
-
 ## Implementation Environment
 
 ### System Requirements
@@ -306,8 +294,6 @@ graph TD
     style B4 fill:#ff6b6b,stroke:#c92a2a,color:#fff
     style C5 fill:#ff6b6b,stroke:#c92a2a,color:#fff
 ```
-
----
 
 ## Building the PKI Step-by-Step
 
@@ -761,7 +747,7 @@ sudo systemctl reload apache2
 
 ```bash
 # Add hostname to /etc/hosts for testing
-echo "127.0.0.1 server.minipki.local" | sudo遂 tee -a /etc/hosts
+echo "127.0.0.1 server.minipki.local" | sudo tee -a /etc/hosts
 
 # Test with curl
 curl -v --cacert ~/pki/intermediate/certs/ca-chain.cert.pem https://localhost
@@ -797,7 +783,7 @@ sequenceDiagram
     Note over Client,Server: Secure encrypted communication established
 ```
 
-**TLS Handshake Flow:**
+**TLS Handshake Flow**
 
 ### Step 10: Creating Client Certificates
 
@@ -896,8 +882,6 @@ C=BD, ST=Dhaka, L=Dhaka, O=MiniPKI, OU=Client, CN=client.minipki.local
 error 23 at 0 depth lookup: certificate revoked
 error certs/client.cert.pem: verification failed
 ```
-
----
 
 ## Testing and Verification
 
@@ -1080,11 +1064,7 @@ Through this implementation, I've gained a deep appreciation for the security pr
 
 **Revocation:** Unlike physical credentials that might remain valid even after loss, certificates can be instantly revoked. Within minutes of detecting a compromise, the certificate becomes untrusted across the entire infrastructure.
 
----
-
-## Lessons Learned and Best Practices
-
-### Security Considerations
+### Lessons Learned and Best Practices
 
 Throughout this implementation, several security principles became clear:
 
@@ -1164,8 +1144,6 @@ graph TB
 
 **Testing Thoroughly:** I verified each certificate at every step, catching issues early rather than debugging complex chain validation failures later.
 
----
-
 ## Conclusion
 
 Building this Mini PKI from scratch has been an incredibly rewarding journey. What started as abstract concepts—certificate chains, trust anchors, asymmetric cryptography—became tangible as I watched my browser display a secure connection to a server using certificates I created.
@@ -1181,8 +1159,6 @@ The beauty of PKI lies in its elegant solution to the trust problem. By establis
 **Practical Skills:** I can now set up secure HTTPS servers, implement client authentication, manage certificate revocation, and troubleshoot common PKI issues.
 
 **Architectural Thinking:** The design decisions—Root vs. Intermediate CAs, validity periods, key sizes, revocation mechanisms—all involve tradeoffs between security, usability, and operational efficiency.
-
----
 
 ## Appendix: Quick Reference Commands
 
