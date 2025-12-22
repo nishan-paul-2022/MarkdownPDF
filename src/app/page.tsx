@@ -4,8 +4,8 @@ import Image from 'next/image';
 
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { MdPreview } from '@/components/md-preview';
+import { Editor } from '@/components/editor';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
 import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X } from 'lucide-react';
 import {
@@ -66,32 +66,49 @@ export default function Home() {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  // Buffer state to keep the Editor "Butter Smooth"
+  // We don't update the Live Preview on every keystroke
   const handleContentChange = useCallback((newRawContent: string) => {
     setRawContent(newRawContent);
-    const parsedMetadata = parseMetadataFromMarkdown(newRawContent);
-    const contentWithoutLandingPage = removeLandingPageSection(newRawContent);
-    
-    setMetadata(parsedMetadata);
-    setContent(contentWithoutLandingPage);
   }, []);
+
+  // Debounce the heavy content processing
+  React.useEffect(() => {
+    if (isLoading) return; // Don't debounce if still loading initial content
+
+    const timer = setTimeout(() => {
+      const parsedMetadata = parseMetadataFromMarkdown(rawContent);
+      const contentWithoutLandingPage = removeLandingPageSection(rawContent);
+      
+      setMetadata(parsedMetadata);
+      setContent(contentWithoutLandingPage);
+    }, 500); // 500ms delay for Live Preview to keep editor snappy
+
+    return () => clearTimeout(timer);
+  }, [rawContent, isLoading]);
 
   React.useEffect(() => {
     setIsLoading(true);
     fetch(DEFAULT_MARKDOWN_PATH)
       .then(res => res.text())
       .then(text => {
-        handleContentChange(text);
+        setRawContent(text);
+        // Immediate update for first load
+        const parsedMetadata = parseMetadataFromMarkdown(text);
+        const contentWithoutLandingPage = removeLandingPageSection(text);
+        setMetadata(parsedMetadata);
+        setContent(contentWithoutLandingPage);
         setIsLoading(false);
       })
       .catch(err => {
         console.error('Failed to load default content:', err);
         setIsLoading(false);
       });
-  }, [handleContentChange]);
+  }, []);
 
 
 
-  const generatePdfBlob = async () => {
+  const generatePdfBlob = useCallback(async () => {
     const response = await fetch('/api/generate-pdf', {
       method: 'POST',
       headers: {
@@ -108,9 +125,9 @@ export default function Home() {
     }
 
     return await response.blob();
-  };
+  }, [content, metadata]);
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = useCallback(async () => {
     setIsGenerating(true);
     try {
       const blob = await generatePdfBlob();
@@ -135,9 +152,9 @@ export default function Home() {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [generatePdfBlob, filename]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setFilename(file.name);
@@ -150,13 +167,13 @@ export default function Home() {
       };
       reader.readAsText(file);
     }
-  };
+  }, [handleContentChange]);
 
-  const triggerFileUpload = () => {
+  const triggerFileUpload = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
-  const handleReset = async () => {
+  const handleReset = useCallback(async () => {
     try {
       const res = await fetch(DEFAULT_MARKDOWN_PATH);
       const text = await res.text();
@@ -166,24 +183,24 @@ export default function Home() {
     } catch (err) {
       console.error('Failed to reset content:', err);
     }
-  };
+  }, [handleContentChange]);
 
-  const scrollToStart = () => {
+  const scrollToStart = useCallback(() => {
     if (textareaRef.current) {
       textareaRef.current.scrollTop = 0;
       textareaRef.current.setSelectionRange(0, 0);
       textareaRef.current.focus();
     }
-  };
+  }, []);
 
-  const scrollToEnd = () => {
+  const scrollToEnd = useCallback(() => {
     if (textareaRef.current) {
       const length = textareaRef.current.value.length;
       textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
       textareaRef.current.setSelectionRange(length, length);
       textareaRef.current.focus();
     }
-  };
+  }, []);
 
   const validateMetadata = () => {
     return !!(
@@ -376,10 +393,10 @@ export default function Home() {
             </div>
 
             <div className="flex-grow relative overflow-hidden">
-              <Textarea
-                ref={textareaRef}
+              <Editor
+                innerRef={textareaRef}
                 value={rawContent}
-                onChange={(e) => handleContentChange(e.target.value)}
+                onChange={handleContentChange}
                 className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
                 placeholder="Write your markdown here..."
               />
@@ -404,4 +421,3 @@ export default function Home() {
     </TooltipProvider>
   );
 }
-

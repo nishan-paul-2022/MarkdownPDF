@@ -150,7 +150,7 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
-export const MdPreview = ({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isMetadataValid = true, isLoading = false }: MdPreviewProps) => {
+export const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isMetadataValid = true, isLoading = false }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
@@ -295,12 +295,12 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     };
   }, [pdfBlobUrl]);
 
-  // Debounced PDF regeneration: only reset PDF blob after user stops typing
+  // Debounced PDF regeneration: reset PDF blob 2s after user stops typing
   useEffect(() => {
     const timer = setTimeout(() => {
       setPdfBlobUrl(null);
       setIsPdfReady(false);
-    }, 1500); // Wait 1.5 seconds after last change before invalidating PDF
+    }, 2000); // Keep PDF steady for 2s while Live View updates quickly
 
     return () => clearTimeout(timer);
   }, [content, metadata]);
@@ -319,7 +319,8 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
 
   // Client-side Pagination Logic
   useEffect(() => {
-    setIsPaginating(true);
+    // We no longer set isPaginating(true) here because it's so fast it just causes flicker.
+    // The previous pages stay visible until the new ones are ready.
     const timer = setTimeout(() => {
       if (!stagingRef.current) return;
 
@@ -350,7 +351,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       setPaginatedPages(pages);
       setIsPaginating(false);
 
-    }, 500);
+    }, 0); 
 
     return () => clearTimeout(timer);
   }, [content, metadata]);
@@ -635,24 +636,36 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                   <TooltipContent>Previous Page</TooltipContent>
                 </Tooltip>
 
-                <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1.5 min-w-[3.5rem] justify-center">
-                  {isInitializing || isPdfRendering ? (
-                    <div className="flex items-center justify-center w-12">
-                      <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
-                    </div>
-                  ) : (
-                    <>
+                <div className="px-1.5 min-w-[4.5rem] flex justify-center items-center relative h-8 overflow-hidden">
+                  {/* Spinner Reveal */}
+                  <div className={cn(
+                    "absolute transition-all duration-300 ease-in-out flex items-center justify-center",
+                    (isInitializing || isPdfRendering) 
+                      ? "opacity-100 scale-100 blur-0" 
+                      : "opacity-0 scale-75 blur-sm pointer-events-none"
+                  )}>
+                    <Sparkles className="w-4 h-4 animate-pulse text-blue-400" />
+                  </div>
+
+                  {/* Numbers Reveal */}
+                  <div className={cn(
+                    "transition-all duration-300 ease-out flex items-center justify-center",
+                    !(isInitializing || isPdfRendering) 
+                      ? "opacity-100 scale-100 translate-y-0" 
+                      : "opacity-0 scale-95 translate-y-1 pointer-events-none"
+                  )}>
+                    <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1">
                       <Input
                         type="text"
                         value={pageInput}
                         onChange={handlePageInputChange}
                         onBlur={handlePageInputSubmit}
-                        className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all"
+                        className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all hover:bg-white/10"
                       />
                       <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
-                    </>
-                  )}
-                </form>
+                    </form>
+                  </div>
+                </div>
 
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -871,4 +884,6 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
       </div>
     </TooltipProvider>
   );
-};
+});
+
+MdPreview.displayName = 'MdPreview';
