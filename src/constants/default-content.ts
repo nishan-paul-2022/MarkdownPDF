@@ -31,10 +31,13 @@ export function parseMetadataFromMarkdown(markdown: string): Metadata {
   const landingPageContent = landingPageMatch[1];
   
   // Parse each line with format: - **Key:** Value (with or without quotes and commas)
+
   // This regex handles both formats:
   // - **Key:** "Value",
   // - **Key:** Value
-  const lineRegex = /^-\s+\*\*(.+?):\*\*\s+(.+?)\s*$/gm;
+  // We use [ \t] instead of \s after the colon to avoid matching newlines, 
+  // preventing the regex from consuming the next line if the value is empty.
+  const lineRegex = /^-\s+\*\*(.+?):\*\*[ \t]*(.*)$/gm;
   let match;
   
   while ((match = lineRegex.exec(landingPageContent)) !== null) {
