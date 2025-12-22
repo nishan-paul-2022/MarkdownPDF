@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { MdPreview } from '@/components/md-preview';
 import { Editor } from '@/components/editor';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
-import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X } from 'lucide-react';
+import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -184,6 +184,18 @@ export default function Home() {
       console.error('Failed to reset content:', err);
     }
   }, [handleContentChange]);
+
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(rawContent);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy content:', err);
+    }
+  }, [rawContent]);
 
   const scrollToStart = useCallback(() => {
     if (textareaRef.current) {
@@ -388,6 +400,21 @@ export default function Home() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Reset to Default Content</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); handleCopy(); }}
+                      className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                    >
+                      {isCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
+                      {isCopied ? 'Copied' : 'Copy'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Copy Markdown Content</TooltipContent>
                 </Tooltip>
               </div>
             </div>
