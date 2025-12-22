@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MdPreview } from '@/components/md-preview';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
-import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine } from 'lucide-react';
+import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -15,12 +15,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+const MAX_FILENAME_LENGTH = 30;
+
 export default function Home() {
   const [rawContent, setRawContent] = useState(''); // Full markdown including Landing Page section
   const [content, setContent] = useState(''); // Content without Landing Page section
   const [metadata, setMetadata] = useState<Metadata>(DEFAULT_METADATA);
   const [isGenerating, setIsGenerating] = useState(false);
   const [filename, setFilename] = useState('document.md');
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempFilename, setTempFilename] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -29,17 +33,35 @@ export default function Home() {
     return name.replace(/\.md$/i, '');
   };
 
-  // Update filename with .md extension
-  const handleFilenameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const baseName = e.target.value;
-    setFilename(baseName ? `${baseName}.md` : 'document.md');
-  };
+
 
   // Calculate input width based on content
-  const getInputWidth = () => {
-    const baseName = getBaseName(filename);
-    const charCount = baseName.length || 8; // minimum 8 chars for "document"
-    return `${Math.max(charCount * 0.6, 5)}rem`; // ~0.6rem per character, min 5rem
+  const getInputWidth = (name: string) => {
+    const charCount = name.length || 8; // minimum 8 chars for "document"
+    return `${Math.max(charCount * 0.65, 5)}rem`; // ~0.65rem per character, min 5rem
+  };
+
+  const handleStartEdit = () => {
+    setTempFilename(getBaseName(filename));
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    if (tempFilename.trim()) {
+      setFilename(`${tempFilename.trim()}.md`);
+    } else {
+      setFilename('document.md');
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') handleCancel();
   };
 
   const [isLoading, setIsLoading] = useState(true);
@@ -209,16 +231,73 @@ export default function Home() {
                 </div>
 
                 {/* Filename Badge */}
-                <div className="group flex items-center gap-1.5 px-3 py-1 bg-slate-800/50 hover:bg-slate-800/70 border border-white/5 hover:border-white/10 rounded-full transition-all duration-200">
-                  <input
-                    type="text"
-                    value={getBaseName(filename)}
-                    onChange={handleFilenameChange}
-                    style={{ width: getInputWidth() }}
-                    className="bg-transparent border-none outline-none text-xs text-slate-300 placeholder:text-slate-500 transition-all duration-200"
-                    placeholder="document"
-                  />
-                  <PencilLine className="w-3 h-3 text-slate-500 group-hover:text-slate-400 transition-colors" />
+                <div 
+                  className={`group flex items-center gap-1.5 px-3 py-1 rounded-full transition-all duration-200 border ${
+                    isEditing 
+                      ? 'bg-slate-800 border-primary/50 ring-1 ring-primary/20' 
+                      : 'bg-slate-800/50 hover:bg-slate-800/70 border-white/5 hover:border-white/10'
+                  }`}
+                >
+                  {isEditing ? (
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={tempFilename}
+                          onChange={(e) => {
+                            if (e.target.value.length <= MAX_FILENAME_LENGTH) {
+                              setTempFilename(e.target.value);
+                            }
+                          }}
+                          onKeyDown={handleKeyDown}
+                          onBlur={() => {
+                            setTimeout(handleSave, 200);
+                          }}
+                          autoFocus
+                          maxLength={MAX_FILENAME_LENGTH}
+                          style={{ width: getInputWidth(tempFilename) }}
+                          className="bg-transparent border-none outline-none text-xs font-medium placeholder:text-slate-500 text-slate-100"
+                          placeholder="document"
+                        />
+                        <span className="text-[10px] tabular-nums select-none opacity-40 font-medium text-slate-400">
+                          {tempFilename.length}/{MAX_FILENAME_LENGTH}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 border-l border-slate-700 ml-1 pl-1">
+                        <button 
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={(e) => { e.stopPropagation(); handleSave(); }}
+                          className="p-0.5 cursor-pointer text-green-400/80 hover:text-green-400 transition-colors"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button 
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={(e) => { e.stopPropagation(); handleCancel(); }}
+                          className="p-0.5 cursor-pointer text-red-400/80 hover:text-red-400 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="text-xs text-slate-300 font-medium">
+                        {getBaseName(filename)}
+                      </span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleStartEdit(); }}
+                            className="p-1 -mr-1 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer ml-2.5"
+                          >
+                            <PencilLine className="w-3 h-3" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Rename file</TooltipContent>
+                      </Tooltip>
+                    </>
+                  )}
                 </div>
               </div>
 
