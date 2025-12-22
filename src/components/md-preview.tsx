@@ -647,7 +647,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(1)}
-                disabled={isLoading || isPdfRendering || currentPage === 1}
+                disabled={isInitializing || isPdfRendering || currentPage === 1}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="First Page"
               >
@@ -657,14 +657,14 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(currentPage - 1)}
-                disabled={isLoading || isPdfRendering || currentPage === 1}
+                disabled={isInitializing || isPdfRendering || currentPage === 1}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Previous Page"
               >
                 <ChevronUp className="w-4 h-4" />
               </Button>
               <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1.5 min-w-[3.5rem] justify-center">
-                {isLoading || isPdfRendering ? (
+                {isInitializing || isPdfRendering ? (
                   <div className="flex items-center justify-center w-12">
                     <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
                   </div>
@@ -685,7 +685,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(currentPage + 1)}
-                disabled={isLoading || isPdfRendering || currentPage === totalPages || totalPages === 0}
+                disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Next Page"
               >
@@ -695,7 +695,7 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
                 variant="ghost"
                 size="icon"
                 onClick={() => scrollToPage(totalPages)}
-                disabled={isLoading || isPdfRendering || currentPage === totalPages || totalPages === 0}
+                disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
                 className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
                 title="Last Page"
               >
