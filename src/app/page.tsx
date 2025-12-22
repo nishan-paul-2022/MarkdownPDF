@@ -254,6 +254,7 @@ export default function Home() {
                 size="sm"
                 onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
                 className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                title="Upload Markdown File"
               >
                 <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload
               </Button>
@@ -262,6 +263,7 @@ export default function Home() {
                 size="sm"
                 onClick={(e) => { e.stopPropagation(); handleReset(); }}
                 className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                title="Reset to Default Content"
               >
                 <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Reset
               </Button>
