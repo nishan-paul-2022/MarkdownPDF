@@ -430,37 +430,37 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   }, [currentPage]);
 
   // Calculate Scale for fit modes
+  const calculateScale = useCallback(() => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+
+    const pageWidth = A4_WIDTH_PX;
+    const pageHeight = A4_HEIGHT_PX;
+
+    const newFitWidthScale = containerWidth / pageWidth;
+    setFitWidthScale(newFitWidthScale);
+
+    const padding = 32;
+    const widthScaleWithPadding = (containerWidth - padding) / pageWidth;
+    const heightScaleWithPadding = (containerHeight - padding) / pageHeight;
+    const newFitPageScale = Math.min(widthScaleWithPadding, heightScaleWithPadding);
+    setFitPageScale(newFitPageScale);
+
+    // Immediately sync zoom input with newly calculated scales to avoid flashes
+    const currentScale = zoomMode === 'fit-page' ? newFitPageScale : (zoomMode === 'fit-width' ? newFitWidthScale : customZoom / 100);
+    setZoomInput(`${Math.round(currentScale * 100)}%`);
+    
+    setIsScaleCalculated(true);
+  }, [zoomMode, customZoom]);
+
   useEffect(() => {
-    const calculateScale = () => {
-      if (!containerRef.current) return;
-      const container = containerRef.current;
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
-
-      const pageWidth = A4_WIDTH_PX;
-      const pageHeight = A4_HEIGHT_PX;
-
-      const newFitWidthScale = containerWidth / pageWidth;
-      setFitWidthScale(newFitWidthScale);
-
-      const padding = 32;
-      const widthScaleWithPadding = (containerWidth - padding) / pageWidth;
-      const heightScaleWithPadding = (containerHeight - padding) / pageHeight;
-      const newFitPageScale = Math.min(widthScaleWithPadding, heightScaleWithPadding);
-      setFitPageScale(newFitPageScale);
-
-      // Immediately sync zoom input with newly calculated scales to avoid flashes
-      const currentScale = zoomMode === 'fit-page' ? newFitPageScale : (zoomMode === 'fit-width' ? newFitWidthScale : customZoom / 100);
-      setZoomInput(`${Math.round(currentScale * 100)}%`);
-      
-      setIsScaleCalculated(true);
-    };
-
     calculateScale();
     const resizeObserver = new ResizeObserver(calculateScale);
     if (containerRef.current) resizeObserver.observe(containerRef.current);
     return () => resizeObserver.disconnect();
-  }, []);
+  }, [calculateScale]);
 
   // Sync Zoom Input for subsequent mode or value changes
   useEffect(() => {
