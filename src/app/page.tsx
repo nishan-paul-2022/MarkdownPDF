@@ -6,15 +6,14 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MdPreview } from '@/components/md-preview';
-import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA } from '@/constants/default-content';
-import { ChevronDown, ChevronUp, FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
+import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine } from 'lucide-react';
 
 export default function Home() {
-  const [content, setContent] = useState('');
-  const [metadata, setMetadata] = useState(DEFAULT_METADATA);
+  const [rawContent, setRawContent] = useState(''); // Full markdown including Landing Page section
+  const [content, setContent] = useState(''); // Content without Landing Page section
+  const [metadata, setMetadata] = useState<Metadata>(DEFAULT_METADATA);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
   const [filename, setFilename] = useState('document.md');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -37,17 +36,23 @@ export default function Home() {
     return `${Math.max(charCount * 0.6, 5)}rem`; // ~0.6rem per character, min 5rem
   };
 
+  // Parse metadata from markdown whenever rawContent changes
+  React.useEffect(() => {
+    const parsedMetadata = parseMetadataFromMarkdown(rawContent);
+    const contentWithoutLandingPage = removeLandingPageSection(rawContent);
+    
+    setMetadata(parsedMetadata);
+    setContent(contentWithoutLandingPage);
+  }, [rawContent]);
+
   React.useEffect(() => {
     fetch(DEFAULT_MARKDOWN_PATH)
       .then(res => res.text())
-      .then(text => setContent(text))
+      .then(text => setRawContent(text))
       .catch(err => console.error('Failed to load default content:', err));
   }, []);
 
-  const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setMetadata(prev => ({ ...prev, [name]: value }));
-  };
+
 
   const generatePdfBlob = async () => {
     const response = await fetch('/api/generate-pdf', {
@@ -103,7 +108,7 @@ export default function Home() {
       reader.onload = (e) => {
         const text = e.target?.result;
         if (typeof text === 'string') {
-          setContent(text);
+          setRawContent(text);
         }
       };
       reader.readAsText(file);
@@ -118,8 +123,7 @@ export default function Home() {
     try {
       const res = await fetch(DEFAULT_MARKDOWN_PATH);
       const text = await res.text();
-      setContent(text);
-      setMetadata(DEFAULT_METADATA);
+      setRawContent(text);
       setFilename('document.md');
     } catch (err) {
       console.error('Failed to reset content:', err);
@@ -145,6 +149,8 @@ export default function Home() {
 
   const validateMetadata = () => {
     return !!(
+      metadata.university?.trim() &&
+      metadata.program?.trim() &&
       metadata.title?.trim() &&
       metadata.subtitle?.trim() &&
       metadata.course?.trim() &&
@@ -250,140 +256,15 @@ export default function Home() {
                 <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Reset
               </Button>
 
-              <div className="w-px h-4 bg-slate-700/50" />
 
-              {/* Settings Toggle */}
-              <div
-                className={cn(
-                  "h-7 w-7 cursor-pointer rounded-md transition-all duration-200 active:scale-95 group flex items-center justify-center border",
-                  isSettingsOpen
-                    ? "bg-white/20 text-white border-white/20 shadow-inner"
-                    : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-200 hover:border-white/5"
-                )}
-                title={isSettingsOpen ? "Hide Metadata" : "Show Metadata"}
-                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-              >
-                {isSettingsOpen ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </div>
             </div>
           </div>
-
-          {isSettingsOpen && (
-            <div className="p-4 bg-slate-900/30 border-b border-slate-800 transition-all duration-300 ease-in-out">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Course Name</label>
-                  <input
-                    name="course"
-                    value={metadata.course}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.course?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Submission Date</label>
-                  <input
-                    name="date"
-                    value={metadata.date}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.date?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-4 gap-4 mt-4">
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Name</label>
-                  <input
-                    name="name"
-                    value={metadata.name}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.name?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Roll No</label>
-                  <input
-                    name="roll"
-                    value={metadata.roll}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.roll?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Reg No</label>
-                  <input
-                    name="reg"
-                    value={metadata.reg}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.reg?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Batch</label>
-                  <input
-                    name="batch"
-                    value={metadata.batch}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.batch?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Cover Title</label>
-                  <input
-                    name="title"
-                    value={metadata.title}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.title?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-400 font-semibold block uppercase">Cover Subtitle</label>
-                  <input
-                    name="subtitle"
-                    value={metadata.subtitle}
-                    onChange={handleMetadataChange}
-                    className={cn(
-                      "w-full bg-slate-800 rounded p-2 text-sm text-slate-200 focus:outline-none focus:ring-1",
-                      metadata.subtitle?.trim() ? "border-slate-700 focus:ring-primary" : "border-red-500/50 focus:ring-red-500"
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="flex-grow relative overflow-hidden">
             <Textarea
               ref={textareaRef}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={rawContent}
+              onChange={(e) => setRawContent(e.target.value)}
               className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
               placeholder="Write your markdown here..."
             />

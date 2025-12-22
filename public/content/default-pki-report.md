@@ -1,3 +1,16 @@
+# Landing Page
+
+- **University:** University of Dhaka
+- **Program:** Professional Masters in Information and Cyber Security
+- **Title:** Exploitation of SMBv1 Vulnerability
+- **Subtitle:** Hands-On Security Assessment in a Controlled Test Environment
+- **Course:** CSE 807 - Information Security Management
+- **Name:** Nishan Paul
+- **Roll No:** JN-50028
+- **Reg. No:** H-55
+- **Batch:** 05
+- **Submission Date:** December 21, 2025
+
 # Table of Contents
 1. [Executive Summary](#1-executive-summary)
 2. [Simulated Environment Setup](#2-simulated-environment-setup)

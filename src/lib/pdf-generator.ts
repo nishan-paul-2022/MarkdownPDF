@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 
 interface Metadata {
+  university?: string;
+  program?: string;
   title?: string;
   subtitle?: string;
   course?: string;
@@ -400,40 +402,56 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
           <img src="data:image/png;base64,${logoBase64}" class="logo" />
         </div>
         
-        <div class="university">UNIVERSITY OF DHAKA</div>
-        <div class="program">Professional Masters in Information and Cyber Security</div>
+        ${metadata.university ? `<div class="university">${metadata.university}</div>` : ''}
+        ${metadata.program ? `<div class="program">${metadata.program}</div>` : ''}
         
+        ${metadata.title || metadata.subtitle ? `
         <div class="title-section">
-          <div class="report-title">${metadata.title}</div>
-          <div class="report-subtitle">${metadata.subtitle}</div>
+          ${metadata.title ? `<div class="report-title">${metadata.title}</div>` : ''}
+          ${metadata.subtitle ? `<div class="report-subtitle">${metadata.subtitle}</div>` : ''}
         </div>
+        ` : ''}
         
+        ${metadata.course ? `
         <div class="course-info">
           ${metadata.course}
         </div>
+        ` : ''}
         
+        ${metadata.name || metadata.roll || metadata.reg || metadata.batch || metadata.date ? `
         <div class="student-details">
+          ${metadata.name ? `
           <div class="details-row">
             <div class="details-label"><span>Name</span><span>:</span></div>
             <div class="details-value">${metadata.name}</div>
           </div>
+          ` : ''}
+          ${metadata.roll ? `
           <div class="details-row">
             <div class="details-label"><span>Roll No</span><span>:</span></div>
             <div class="details-value">${metadata.roll}</div>
           </div>
+          ` : ''}
+          ${metadata.reg ? `
           <div class="details-row">
             <div class="details-label"><span>Reg. No</span><span>:</span></div>
             <div class="details-value">${metadata.reg}</div>
           </div>
+          ` : ''}
+          ${metadata.batch ? `
           <div class="details-row">
             <div class="details-label"><span>Batch</span><span>:</span></div>
             <div class="details-value">${metadata.batch}</div>
           </div>
+          ` : ''}
+          ${metadata.date ? `
           <div class="details-row">
             <div class="details-label"><span>Submission Date</span><span>:</span></div>
             <div class="details-value">${metadata.date}</div>
           </div>
+          ` : ''}
         </div>
+        ` : ''}
       </div>
       ${markdownHtml.trim() ? `
       <div class="report-container">

@@ -20,14 +20,16 @@ const PdfViewer = dynamic(() => import('./pdf-viewer'), {
 interface MdPreviewProps {
   content: string;
   metadata?: {
-    title: string;
-    subtitle: string;
-    course: string;
-    name: string;
-    roll: string;
-    reg: string;
-    batch: string;
-    date: string;
+    university?: string;
+    program?: string;
+    title?: string;
+    subtitle?: string;
+    course?: string;
+    name?: string;
+    roll?: string;
+    reg?: string;
+    batch?: string;
+    date?: string;
   };
   className?: string;
   showToolbar?: boolean;
@@ -62,41 +64,55 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
           <Image src="/du-logo.png" alt="Logo" width={120} height={120} className="w-[120px] h-auto" />
         </div>
 
-        <div className="text-[28px] font-bold tracking-[2px] mt-[10px] uppercase">UNIVERSITY OF DHAKA</div>
-        <div className="text-[16px] font-normal mt-[8px] opacity-90">Professional Masters in Information and Cyber Security</div>
+        {metadata.university && (
+          <div className="text-[28px] font-bold tracking-[2px] mt-[10px] uppercase">{metadata.university}</div>
+        )}
+        {metadata.program && (
+          <div className="text-[16px] font-normal mt-[8px] opacity-90">{metadata.program}</div>
+        )}
 
-        <div className="mt-[2cm] mb-[2cm] w-full flex flex-col items-center">
-          <div className="text-[32px] font-extrabold leading-[1.2] mb-[8px] w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
-            {metadata.title}
-          </div>
-          <div className="text-[18px] font-semibold opacity-95 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
-            {metadata.subtitle}
-          </div>
-        </div>
-
-        <div className="mt-[1cm] text-[15px] w-[85%] border-b border-white/20 pb-[10px] whitespace-nowrap overflow-hidden text-ellipsis">
-          {metadata.course}
-        </div>
-
-        <div className="mt-[1cm] w-[70%] p-[20px] bg-white/10 border border-white/10 rounded-xl backdrop-blur-sm">
-          <div className="space-y-[8px]">
-            {[
-              { label: 'Name', value: metadata.name },
-              { label: 'Roll No', value: metadata.roll },
-              { label: 'Reg. No', value: metadata.reg },
-              { label: 'Batch', value: metadata.batch },
-              { label: 'Submission Date', value: metadata.date },
-            ].map((detail, idx) => (
-              <div key={idx} className="flex text-left text-[14px]">
-                <div className="w-[42%] font-semibold text-white/90 flex justify-between">
-                  {detail.label}
-                  <span className="mr-2">:</span>
-                </div>
-                <div className="w-[58%] font-medium text-white pl-2">{detail.value}</div>
+        {(metadata.title || metadata.subtitle) && (
+          <div className="mt-[2cm] mb-[2cm] w-full flex flex-col items-center">
+            {metadata.title && (
+              <div className="text-[32px] font-extrabold leading-[1.2] mb-[8px] w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
+                {metadata.title}
               </div>
-            ))}
+            )}
+            {metadata.subtitle && (
+              <div className="text-[18px] font-semibold opacity-95 w-full px-8 whitespace-nowrap overflow-hidden text-ellipsis">
+                {metadata.subtitle}
+              </div>
+            )}
           </div>
-        </div>
+        )}
+
+        {metadata.course && (
+          <div className="mt-[1cm] text-[15px] w-[85%] border-b border-white/20 pb-[10px] whitespace-nowrap overflow-hidden text-ellipsis">
+            {metadata.course}
+          </div>
+        )}
+
+        {(metadata.name || metadata.roll || metadata.reg || metadata.batch || metadata.date) && (
+          <div className="mt-[1cm] w-[70%] p-[20px] bg-white/10 border border-white/10 rounded-xl backdrop-blur-sm">
+            <div className="space-y-[8px]">
+              {[
+                { label: 'Name', value: metadata.name },
+                { label: 'Roll No', value: metadata.roll },
+                { label: 'Reg. No', value: metadata.reg },
+                { label: 'Batch', value: metadata.batch },
+                { label: 'Submission Date', value: metadata.date },
+              ].filter(detail => detail.value).map((detail, idx) => (
+                <div key={idx} className="flex text-left text-[14px]">
+                  <div className="w-[42%] font-semibold text-white/90 flex justify-between">
+                    {detail.label}
+                    <span className="mr-2">:</span>
+                  </div>
+                  <div className="w-[58%] font-medium text-white pl-2">{detail.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
