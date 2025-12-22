@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, Sparkles, RefreshCw, Play, Pause } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, Sparkles, RefreshCw, Play, Pause, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import {
@@ -171,6 +171,8 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
   const containerRef = useRef<HTMLDivElement>(null);
   const stagingRef = useRef<HTMLDivElement>(null);
+  const [lastRenderedSignature, setLastRenderedSignature] = useState<string>('');
+  const [renderSuccess, setRenderSuccess] = useState(false);
 
   // Memoized components for ReactMarkdown to use in Staging Area
   const markdownComponents = React.useMemo(() => ({
@@ -275,6 +277,8 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
   const onPdfRenderSuccess = useCallback(() => {
     setIsPdfReady(true);
+    setRenderSuccess(true);
+    setTimeout(() => setRenderSuccess(false), 2000);
   }, []);
 
   useEffect(() => {
@@ -284,11 +288,13 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
         .then(blob => {
           const url = URL.createObjectURL(blob);
           setPdfBlobUrl(url);
+          // Mark this content as "rendered"
+          setLastRenderedSignature(JSON.stringify({ content, metadata }));
         })
         .catch(err => console.error(err))
         .finally(() => setIsPdfLoading(false));
     }
-  }, [viewMode, onGeneratePdf, pdfBlobUrl]);
+  }, [viewMode, onGeneratePdf, pdfBlobUrl, content, metadata]);
 
   useEffect(() => {
     return () => {
@@ -301,13 +307,17 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     // If auto-render is disabled and we are in preview mode, do not reset the PDF blob automatically
     if (!isAutoRender && viewMode === 'preview') return;
 
+    // IF the current content matches what we last rendered, we don't need to invalidate.
+    const currentSignature = JSON.stringify({ content, metadata });
+    if (currentSignature === lastRenderedSignature) return;
+
     const timer = setTimeout(() => {
       setPdfBlobUrl(null);
       setIsPdfReady(false);
     }, 2000); // Keep PDF steady for 2s while Live View updates quickly
 
     return () => clearTimeout(timer);
-  }, [content, metadata, isAutoRender, viewMode]);
+  }, [content, metadata, isAutoRender, viewMode, lastRenderedSignature]);
 
   const handleManualRefresh = useCallback(() => {
     setPdfBlobUrl(null);
@@ -521,6 +531,9 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     return customZoom / 100;
   };
 
+  const currentSignature = JSON.stringify({ content, metadata });
+  const hasChanges = currentSignature !== lastRenderedSignature;
+
   return (
     <TooltipProvider>
       <div className={cn("pdf-viewer relative flex flex-col h-full bg-slate-900/50", className)}>
@@ -621,6 +634,65 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {viewMode === 'preview' && (
+                <>
+                  <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setIsAutoRender(!isAutoRender)}
+                          className={cn(
+                            "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
+                            isAutoRender
+                              ? "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
+                              : "bg-white/10 text-white border-white/20 hover:bg-white/20 shadow-inner"
+                          )}
+                        >
+                          {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {isAutoRender ? "Pause Auto-Rendering" : "Resume Auto-Rendering"}
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => !renderSuccess && handleManualRefresh()}
+                          disabled={!renderSuccess && (isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges)}
+                          className={cn(
+                            "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
+                            renderSuccess
+                              ? "text-green-400 bg-green-500/10 border-transparent"
+                              : !isAutoRender && !isPdfRendering && hasChanges
+                                ? "text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 border-transparent"
+                                : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 disabled:opacity-30 disabled:hover:bg-transparent hover:border-white/5"
+                          )}
+                        >
+                          {renderSuccess ? (
+                            <Check className="w-3.5 h-3.5" />
+                          ) : (
+                            <RefreshCw className={cn("w-3.5 h-3.5", isPdfRendering && "animate-spin")} />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {renderSuccess 
+                          ? "Render Successful" 
+                          : hasChanges 
+                            ? "Refresh Preview (Changes Detected)" 
+                            : "Preview is up to date"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+                </>
+              )}
               <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -799,46 +871,6 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>Fit Width</TooltipContent>
-                </Tooltip>
-              </div>
-
-              <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
-
-              <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsAutoRender(!isAutoRender)}
-                      className={cn(
-                        "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
-                        isAutoRender
-                          ? "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
-                          : "bg-white/10 text-amber-400 border-amber-400/20 hover:bg-white/20"
-                      )}
-                    >
-                      {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isAutoRender ? "Pause Auto-Rendering" : "Resume Auto-Rendering"}
-                  </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleManualRefresh}
-                      disabled={isPdfRendering || (isAutoRender && isPdfReady)}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
-                    >
-                      <RefreshCw className={cn("w-3.5 h-3.5", isPdfRendering && "animate-spin")} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Manual Refresh</TooltipContent>
                 </Tooltip>
               </div>
 
