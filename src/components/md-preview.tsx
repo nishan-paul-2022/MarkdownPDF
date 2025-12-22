@@ -10,6 +10,12 @@ import { cn } from '@/lib/utils';
 import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 import dynamic from 'next/dynamic';
 
 const PdfViewer = dynamic(() => import('./pdf-viewer'), {
@@ -556,311 +562,368 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
   };
 
   return (
-    <div className={cn("pdf-viewer relative flex flex-col h-full bg-slate-900/50", className)}>
-      {/* Global Loader Overlay - Centered in viewport, independent of scroll position */}
-      <div className={cn(
-        "absolute inset-0 z-50 flex items-center justify-center transition-all duration-200 ease-in-out backdrop-blur-[2px] bg-slate-900/5",
-        showToolbar ? "top-12" : "top-0",
-        isPdfRendering ? "opacity-100" : "opacity-0 pointer-events-none"
-      )}>
-        <div className="relative flex flex-col items-center gap-8 -translate-y-6">
-          {/* Radial gradient glow background */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-64 h-64 bg-gradient-radial from-primary/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
-          </div>
-
-          {/* Orbital spinner system */}
-          <div className="relative w-24 h-24 scale-110">
-            {/* Outer ring */}
-            <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin" style={{ animationDuration: '3s' }} />
-
-            {/* Middle ring */}
-            <div className="absolute inset-2 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
-
-            {/* Inner glow */}
-            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/40 to-blue-500/40 blur-md animate-pulse" />
-
-            {/* Center spinner */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-10 h-10 animate-spin text-primary drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" style={{ animationDuration: '1.5s' }} />
+    <TooltipProvider>
+      <div className={cn("pdf-viewer relative flex flex-col h-full bg-slate-900/50", className)}>
+        {/* Global Loader Overlay - Centered in viewport, independent of scroll position */}
+        <div className={cn(
+          "absolute inset-0 z-50 flex items-center justify-center transition-all duration-200 ease-in-out backdrop-blur-[2px] bg-slate-900/5",
+          showToolbar ? "top-12" : "top-0",
+          isPdfRendering ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}>
+          <div className="relative flex flex-col items-center gap-8 -translate-y-6">
+            {/* Radial gradient glow background */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-64 h-64 bg-gradient-radial from-primary/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
             </div>
 
-            {/* Floating particles */}
-            <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
-            <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
-            <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
-          </div>
-        </div>
-      </div>
+            {/* Orbital spinner system */}
+            <div className="relative w-24 h-24 scale-110">
+              {/* Outer ring */}
+              <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin" style={{ animationDuration: '3s' }} />
 
-      {/* Hidden Staging Area */}
-      <div
-        className="fixed top-0 left-0 overflow-hidden pointer-events-none opacity-0 -z-50 bg-white"
-        style={{ width: `${A4_WIDTH_PX}px`, padding: '15mm' }}
-        aria-hidden="true"
-      >
-        <div ref={stagingRef} className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-            {content}
-          </ReactMarkdown>
-        </div>
-      </div>
+              {/* Middle ring */}
+              <div className="absolute inset-2 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
 
-      {showToolbar && (
-        <div className="flex items-center justify-between px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
-            <Eye className="w-3.5 h-3.5" />
-            PDF
-            <div className="flex bg-slate-950/40 rounded-lg p-1 border border-white/5 ml-3 shadow-inner">
-              <button
-                onClick={() => setViewMode('live')}
-                title="Live Edit View"
-                className={cn(
-                  "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer border",
-                  viewMode === 'live'
-                    ? "bg-white/20 text-white border-white/20 shadow-inner"
-                    : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
-                )}
-              >
-                LIVE
-              </button>
-              <button
-                onClick={() => isMetadataValid && setViewMode('preview')}
-                disabled={!isMetadataValid}
-                title={!isMetadataValid ? "Fill in all fields to view print preview" : "View print preview"}
-                className={cn(
-                  "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 border ml-1",
-                  !isMetadataValid
-                    ? "text-slate-700 border-transparent cursor-not-allowed opacity-40"
-                    : viewMode === 'preview'
-                      ? "bg-white/20 text-white border-white/20 shadow-inner cursor-pointer"
-                      : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100 cursor-pointer"
-                )}
-              >
-                PRINT
-              </button>
+              {/* Inner glow */}
+              <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/40 to-blue-500/40 blur-md animate-pulse" />
+
+              {/* Center spinner */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin text-primary drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" style={{ animationDuration: '1.5s' }} />
+              </div>
+
+              {/* Floating particles */}
+              <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+              <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => scrollToPage(1)}
-                disabled={isInitializing || isPdfRendering || currentPage === 1}
-                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
-                title="First Page"
-              >
-                <ChevronsUp className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => scrollToPage(currentPage - 1)}
-                disabled={isInitializing || isPdfRendering || currentPage === 1}
-                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
-                title="Previous Page"
-              >
-                <ChevronUp className="w-4 h-4" />
-              </Button>
-              <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1.5 min-w-[3.5rem] justify-center">
-                {isInitializing || isPdfRendering ? (
-                  <div className="flex items-center justify-center w-12">
-                    <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
-                  </div>
-                ) : (
-                  <>
+        </div>
+
+        {/* Hidden Staging Area */}
+        <div
+          className="fixed top-0 left-0 overflow-hidden pointer-events-none opacity-0 -z-50 bg-white"
+          style={{ width: `${A4_WIDTH_PX}px`, padding: '15mm' }}
+          aria-hidden="true"
+        >
+          <div ref={stagingRef} className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+              {content}
+            </ReactMarkdown>
+          </div>
+        </div>
+
+        {showToolbar && (
+          <div className="flex items-center justify-between px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
+              <Eye className="w-3.5 h-3.5" />
+              PDF
+              <div className="flex bg-slate-950/40 rounded-lg p-1 border border-white/5 ml-3 shadow-inner">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setViewMode('live')}
+                      className={cn(
+                        "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer border",
+                        viewMode === 'live'
+                          ? "bg-white/20 text-white border-white/20 shadow-inner"
+                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                      )}
+                    >
+                      LIVE
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Live Edit View</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => isMetadataValid && setViewMode('preview')}
+                      disabled={!isMetadataValid}
+                      className={cn(
+                        "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 border ml-1",
+                        !isMetadataValid
+                          ? "text-slate-700 border-transparent cursor-not-allowed opacity-40"
+                          : viewMode === 'preview'
+                            ? "bg-white/20 text-white border-white/20 shadow-inner cursor-pointer"
+                            : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100 cursor-pointer"
+                      )}
+                    >
+                      PRINT
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {!isMetadataValid ? "Fill in all fields to view print preview" : "View print preview"}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => scrollToPage(1)}
+                      disabled={isInitializing || isPdfRendering || currentPage === 1}
+                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                    >
+                      <ChevronsUp className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>First Page</TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => scrollToPage(currentPage - 1)}
+                      disabled={isInitializing || isPdfRendering || currentPage === 1}
+                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Previous Page</TooltipContent>
+                </Tooltip>
+
+                <form onSubmit={handlePageInputSubmit} className="flex items-baseline gap-1 px-1.5 min-w-[3.5rem] justify-center">
+                  {isInitializing || isPdfRendering ? (
+                    <div className="flex items-center justify-center w-12">
+                      <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
+                    </div>
+                  ) : (
+                    <>
+                      <Input
+                        type="text"
+                        value={pageInput}
+                        onChange={handlePageInputChange}
+                        onBlur={handlePageInputSubmit}
+                        className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all"
+                      />
+                      <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
+                    </>
+                  )}
+                </form>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => scrollToPage(currentPage + 1)}
+                      disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
+                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Next Page</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => scrollToPage(totalPages)}
+                      disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
+                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                    >
+                      <ChevronsDown className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Last Page</TooltipContent>
+                </Tooltip>
+              </div>
+
+              <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
+              <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleZoomChange(-10)}
+                      disabled={getScale() * 100 <= 25}
+                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                    >
+                      <ZoomOut className="w-3.5 h-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Zoom Out</TooltipContent>
+                </Tooltip>
+
+                <form onSubmit={handleZoomInputSubmit} className="min-w-[3rem] flex justify-center">
+                  {!isScaleCalculated ? (
+                    <div className="flex items-center justify-center w-10 h-5">
+                      <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
+                    </div>
+                  ) : (
                     <Input
                       type="text"
-                      value={pageInput}
-                      onChange={handlePageInputChange}
-                      onBlur={handlePageInputSubmit}
-                      className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all"
+                      value={zoomInput}
+                      onChange={handleZoomInputChange}
+                      onBlur={handleZoomInputSubmit}
+                      className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-primary/50 rounded-sm tabular-nums shadow-inner transition-all"
                     />
-                    <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
-                  </>
-                )}
-              </form>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => scrollToPage(currentPage + 1)}
-                disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
-                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
-                title="Next Page"
-              >
-                <ChevronDown className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => scrollToPage(totalPages)}
-                disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
-                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
-                title="Last Page"
-              >
-                <ChevronsDown className="w-4 h-4" />
-              </Button>
-            </div>
+                  )}
+                </form>
 
-            <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
-
-            <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleZoomChange(-10)}
-                disabled={getScale() * 100 <= 25}
-                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
-                title="Zoom Out"
-              >
-                <ZoomOut className="w-3.5 h-3.5" />
-              </Button>
-              <form onSubmit={handleZoomInputSubmit} className="min-w-[3rem] flex justify-center">
-                {!isScaleCalculated ? (
-                  <div className="flex items-center justify-center w-10 h-5">
-                    <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
-                  </div>
-                ) : (
-                  <Input
-                    type="text"
-                    value={zoomInput}
-                    onChange={handleZoomInputChange}
-                    onBlur={handleZoomInputSubmit}
-                    className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-primary/50 rounded-sm tabular-nums shadow-inner transition-all"
-                  />
-                )}
-              </form>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleZoomChange(10)}
-                disabled={getScale() * 100 >= 400}
-                className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
-                title="Zoom In"
-              >
-                <ZoomIn className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-
-            <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
-
-            <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
-              <button
-                onClick={() => setZoomMode('fit-page')}
-                className={cn(
-                  "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
-                  zoomMode === 'fit-page'
-                    ? "bg-white/20 text-white border-white/20 shadow-inner"
-                    : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
-                )}
-                title="Fit Page"
-              >
-                <Maximize className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => setZoomMode('fit-width')}
-                className={cn(
-                  "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
-                  zoomMode === 'fit-width'
-                    ? "bg-white/20 text-white border-white/20 shadow-inner"
-                    : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
-                )}
-                title="Fit Width"
-              >
-                <ArrowLeftRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
-
-            <div
-              title={!isMetadataValid ? "Fill in all fields to download PDF" : "Download PDF"}
-              className={cn(
-                "inline-block",
-                (isGenerating || !isMetadataValid) && "cursor-not-allowed"
-              )}
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onDownload}
-                disabled={isGenerating || !isMetadataValid}
-                className={cn(
-                  "h-8 w-8 rounded-md transition-all duration-200 active:scale-95 group/download relative border",
-                  isGenerating || !isMetadataValid
-                    ? "opacity-50 cursor-not-allowed"
-                    : "",
-                  isGenerating
-                    ? "bg-white/20 text-white border-white/20 shadow-inner"
-                    : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
-                )}
-              >
-                {isGenerating ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-white" />
-                ) : (
-                  <DownloadCloud className="w-[18px] h-[18px]" />
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div ref={containerRef} className={cn("flex-grow overflow-y-scroll overflow-x-auto flex justify-center bg-slate-900/40 custom-scrollbar relative", zoomMode === 'fit-width' ? "p-0" : "p-4")}>
-        <div className="grid grid-cols-1 grid-rows-1 origin-top transition-transform duration-300 ease-out" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
-
-          {/* Live View Layer */}
-          <div className={cn(
-            "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
-            viewMode === 'live' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
-          )}>
-            {metadata && !isLoading && (
-              <div data-page-index={0} className="live-view-page shadow-xl">
-                <CoverPage metadata={metadata} />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleZoomChange(10)}
+                      disabled={getScale() * 100 >= 400}
+                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                    >
+                      <ZoomIn className="w-3.5 h-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Zoom In</TooltipContent>
+                </Tooltip>
               </div>
-            )}
-            {content.trim() && paginatedPages.length > 0 && !isLoading && (
-              paginatedPages.map((pageHtml, index) => (
-                <div key={index} data-page-index={index + (metadata ? 1 : 0)} className="live-view-page shadow-xl">
-                  <PageWrapper pageNumber={index + (metadata ? 2 : 1)} totalPages={totalPages}>
-                    <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }} dangerouslySetInnerHTML={{ __html: pageHtml }} />
-                  </PageWrapper>
-                </div>
-              ))
-            )}
-            {/* Filler for empty content case */}
-            {!metadata && !content.trim() && (
-              <div className="bg-white shadow-xl" style={{ width: A4_WIDTH_PX, height: A4_HEIGHT_PX }}></div>
-            )}
-          </div>
 
-          {/* PDF Preview Layer */}
-          <div className={cn(
-            "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
-            viewMode === 'preview' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
-          )}>
-            <div className="relative" key={`pdf-view-${renderKey}`}>
-              {/* Note: We keep PdfViewer mounted if pdfBlobUrl exists, even in live mode, for instant switch */}
-              {pdfBlobUrl && !isLoading && (
-                <div className={cn(
-                  "pdf-view-page-container transition-opacity duration-700 ease-in-out",
-                  isPdfReady ? "opacity-100" : "opacity-0"
-                )}>
-                  <PdfViewer
-                    key={renderKey}
-                    url={pdfBlobUrl}
-                    onLoadSuccess={handlePdfLoadSuccess}
-                    onRenderSuccess={onPdfRenderSuccess}
-                    width={A4_WIDTH_PX}
-                  />
-                </div>
-              )}
+              <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
+              <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setZoomMode('fit-page')}
+                      className={cn(
+                        "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
+                        zoomMode === 'fit-page'
+                          ? "bg-white/20 text-white border-white/20 shadow-inner"
+                          : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
+                      )}
+                    >
+                      <Maximize className="w-3.5 h-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Fit Page</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setZoomMode('fit-width')}
+                      className={cn(
+                        "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
+                        zoomMode === 'fit-width'
+                          ? "bg-white/20 text-white border-white/20 shadow-inner"
+                          : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
+                      )}
+                    >
+                      <ArrowLeftRight className="w-3.5 h-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Fit Width</TooltipContent>
+                </Tooltip>
+              </div>
+
+              <div className="w-px h-4 bg-slate-800/50 mx-0.5" />
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={cn(
+                      "inline-block",
+                      (isGenerating || !isMetadataValid) && "cursor-not-allowed"
+                    )}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={onDownload}
+                      disabled={isGenerating || !isMetadataValid}
+                      className={cn(
+                        "h-8 w-8 rounded-md transition-all duration-200 active:scale-95 group/download relative border",
+                        isGenerating || !isMetadataValid
+                          ? "opacity-50 cursor-not-allowed"
+                          : "",
+                        isGenerating
+                          ? "bg-white/20 text-white border-white/20 shadow-inner"
+                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                      )}
+                    >
+                      {isGenerating ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      ) : (
+                        <DownloadCloud className="w-[18px] h-[18px]" />
+                      )}
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {!isMetadataValid ? "Fill in all fields to download PDF" : "Download PDF"}
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
+        )}
 
+        <div ref={containerRef} className={cn("flex-grow overflow-y-scroll overflow-x-auto flex justify-center bg-slate-900/40 custom-scrollbar relative", zoomMode === 'fit-width' ? "p-0" : "p-4")}>
+          <div className="grid grid-cols-1 grid-rows-1 origin-top transition-transform duration-300 ease-out" style={{ transform: `scale(${getScale()}) translateZ(0)`, width: `${A4_WIDTH_PX}px`, height: 'fit-content', willChange: 'transform' }}>
+
+            {/* Live View Layer */}
+            <div className={cn(
+              "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+              viewMode === 'live' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+            )}>
+              {metadata && !isLoading && (
+                <div data-page-index={0} className="live-view-page shadow-xl">
+                  <CoverPage metadata={metadata} />
+                </div>
+              )}
+              {content.trim() && paginatedPages.length > 0 && !isLoading && (
+                paginatedPages.map((pageHtml, index) => (
+                  <div key={index} data-page-index={index + (metadata ? 1 : 0)} className="live-view-page shadow-xl">
+                    <PageWrapper pageNumber={index + (metadata ? 2 : 1)} totalPages={totalPages}>
+                      <div className="prose prose-slate max-w-none break-words" style={{ fontFamily: 'var(--font-lora), serif' }} dangerouslySetInnerHTML={{ __html: pageHtml }} />
+                    </PageWrapper>
+                  </div>
+                ))
+              )}
+              {/* Filler for empty content case */}
+              {!metadata && !content.trim() && (
+                <div className="bg-white shadow-xl" style={{ width: A4_WIDTH_PX, height: A4_HEIGHT_PX }}></div>
+              )}
+            </div>
+
+            {/* PDF Preview Layer */}
+            <div className={cn(
+              "col-start-1 row-start-1 flex flex-col gap-4 transition-opacity duration-500 ease-in-out origin-top",
+              viewMode === 'preview' && !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+            )}>
+              <div className="relative" key={`pdf-view-${renderKey}`}>
+                {/* Note: We keep PdfViewer mounted if pdfBlobUrl exists, even in live mode, for instant switch */}
+                {pdfBlobUrl && !isLoading && (
+                  <div className={cn(
+                    "pdf-view-page-container transition-opacity duration-700 ease-in-out",
+                    isPdfReady ? "opacity-100" : "opacity-0"
+                  )}>
+                    <PdfViewer
+                      key={renderKey}
+                      url={pdfBlobUrl}
+                      onLoadSuccess={handlePdfLoadSuccess}
+                      onRenderSuccess={onPdfRenderSuccess}
+                      width={A4_WIDTH_PX}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };

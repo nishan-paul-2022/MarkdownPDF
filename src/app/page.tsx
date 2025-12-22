@@ -8,6 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { MdPreview } from '@/components/md-preview';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
 import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function Home() {
   const [rawContent, setRawContent] = useState(''); // Full markdown including Landing Page section
@@ -175,129 +181,148 @@ export default function Home() {
   const isMetadataValid = validateMetadata();
 
   return (
-    <main className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
-      {/* Header */}
-      {/* Floating Branding Island */}
-      <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 px-4 py-2 bg-slate-900/85 backdrop-blur-md border border-white/10 rounded-full shadow-2xl transition-all hover:scale-105 hover:bg-slate-900 duration-300 group select-none">
-        <div className="relative">
-          <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <Image src="/brand-logo.svg" alt="Logo" width={24} height={24} className="w-6 h-6 object-contain relative z-10 opacity-90 group-hover:opacity-100 transition-opacity" />
+    <TooltipProvider>
+      <main className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
+        {/* Header */}
+        {/* Floating Branding Island */}
+        <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 px-4 py-2 bg-slate-900/85 backdrop-blur-md border border-white/10 rounded-full shadow-2xl transition-all hover:scale-105 hover:bg-slate-900 duration-300 group select-none">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <Image src="/brand-logo.svg" alt="Logo" width={24} height={24} className="w-6 h-6 object-contain relative z-10 opacity-90 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <h1 className="text-sm font-medium tracking-wide text-slate-300/90 group-hover:text-slate-100 transition-colors">
+            MarkdownPDF
+          </h1>
         </div>
-        <h1 className="text-sm font-medium tracking-wide text-slate-300/90 group-hover:text-slate-100 transition-colors">
-          MarkdownPDF
-        </h1>
-      </div>
 
-      {/* Main Content Area - Full Height */}
-      <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden">
-        {/* Editor Side */}
-        <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
-          <div
-            className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
-          >
-            {/* Left Section - Label & Filename Badge */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
-                <FileCode className="w-3.5 h-3.5" /> Markdown
+        {/* Main Content Area - Full Height */}
+        <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden">
+          {/* Editor Side */}
+          <div className="flex-1 flex flex-col border-r border-slate-800 overflow-hidden">
+            <div
+              className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
+            >
+              {/* Left Section - Label & Filename Badge */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-xs font-medium text-slate-200 uppercase tracking-wider">
+                  <FileCode className="w-3.5 h-3.5" /> Markdown
+                </div>
+
+                {/* Filename Badge */}
+                <div className="group flex items-center gap-1.5 px-3 py-1 bg-slate-800/50 hover:bg-slate-800/70 border border-white/5 hover:border-white/10 rounded-full transition-all duration-200">
+                  <input
+                    type="text"
+                    value={getBaseName(filename)}
+                    onChange={handleFilenameChange}
+                    style={{ width: getInputWidth() }}
+                    className="bg-transparent border-none outline-none text-xs text-slate-300 placeholder:text-slate-500 transition-all duration-200"
+                    placeholder="document"
+                  />
+                  <PencilLine className="w-3 h-3 text-slate-500 group-hover:text-slate-400 transition-colors" />
+                </div>
               </div>
 
-              {/* Filename Badge */}
-              <div className="group flex items-center gap-1.5 px-3 py-1 bg-slate-800/50 hover:bg-slate-800/70 border border-white/5 hover:border-white/10 rounded-full transition-all duration-200">
+              {/* Right Section - Actions & Controls */}
+              <div className="flex items-center gap-2">
+                {/* Navigation Controls */}
+                <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-lg p-0.5 border border-white/5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={scrollToStart}
+                        className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
+                      >
+                        <ChevronsUp className="w-3.5 h-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Jump to Start</TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={scrollToEnd}
+                        className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
+                      >
+                        <ChevronsDown className="w-3.5 h-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Jump to End</TooltipContent>
+                  </Tooltip>
+                </div>
+
+                <div className="w-px h-4 bg-slate-700/50" />
+
+                {/* File Actions */}
                 <input
-                  type="text"
-                  value={getBaseName(filename)}
-                  onChange={handleFilenameChange}
-                  style={{ width: getInputWidth() }}
-                  className="bg-transparent border-none outline-none text-xs text-slate-300 placeholder:text-slate-500 transition-all duration-200"
-                  placeholder="document"
+                  type="file"
+                  accept=".md"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  className="hidden"
                 />
-                <PencilLine className="w-3 h-3 text-slate-500 group-hover:text-slate-400 transition-colors" />
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
+                      className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                    >
+                      <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Upload Markdown File</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); handleReset(); }}
+                      className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Reset
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Reset to Default Content</TooltipContent>
+                </Tooltip>
               </div>
             </div>
 
-            {/* Right Section - Actions & Controls */}
-            <div className="flex items-center gap-2">
-              {/* Navigation Controls */}
-              <div className="flex items-center gap-0.5 bg-slate-800/40 rounded-lg p-0.5 border border-white/5">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={scrollToStart}
-                  className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
-                  title="Jump to Start"
-                >
-                  <ChevronsUp className="w-3.5 h-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={scrollToEnd}
-                  className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
-                  title="Jump to End"
-                >
-                  <ChevronsDown className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-
-              <div className="w-px h-4 bg-slate-700/50" />
-
-              {/* File Actions */}
-              <input
-                type="file"
-                accept=".md"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                className="hidden"
+            <div className="flex-grow relative overflow-hidden">
+              <Textarea
+                ref={textareaRef}
+                value={rawContent}
+                onChange={(e) => handleContentChange(e.target.value)}
+                className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
+                placeholder="Write your markdown here..."
               />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
-                title="Upload Markdown File"
-              >
-                <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
-                title="Reset to Default Content"
-              >
-                <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Reset
-              </Button>
-
-
             </div>
           </div>
 
-          <div className="flex-grow relative overflow-hidden">
-            <Textarea
-              ref={textareaRef}
-              value={rawContent}
-              onChange={(e) => handleContentChange(e.target.value)}
-              className="absolute inset-0 w-full h-full resize-none border-none p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
-              placeholder="Write your markdown here..."
+          {/* Preview Side */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/20">
+            <MdPreview
+              content={content}
+              metadata={metadata}
+              showToolbar={true}
+              onDownload={handleDownloadPdf}
+              onGeneratePdf={generatePdfBlob}
+              isGenerating={isGenerating}
+              isMetadataValid={isMetadataValid}
+              isLoading={isLoading}
             />
           </div>
         </div>
-
-        {/* Preview Side */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/20">
-          <MdPreview
-            content={content}
-            metadata={metadata}
-            showToolbar={true}
-            onDownload={handleDownloadPdf}
-            onGeneratePdf={generatePdfBlob}
-            isGenerating={isGenerating}
-            isMetadataValid={isMetadataValid}
-            isLoading={isLoading}
-          />
-        </div>
-      </div>
-    </main>
+      </main>
+    </TooltipProvider>
   );
 }
 
