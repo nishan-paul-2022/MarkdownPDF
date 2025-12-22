@@ -25,6 +25,7 @@ export default function Home() {
   const [filename, setFilename] = useState('document.md');
   const [isEditing, setIsEditing] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
+  const [isReset, setIsReset] = useState(false);
   const [tempFilename, setTempFilename] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -183,6 +184,8 @@ export default function Home() {
       
       handleContentChange(text);
       setFilename('document.md');
+      setIsReset(true);
+      setTimeout(() => setIsReset(false), 2000);
     } catch (err) {
       console.error('Failed to reset content:', err);
     }
@@ -400,7 +403,8 @@ export default function Home() {
                       onClick={(e) => { e.stopPropagation(); handleReset(); }}
                       className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
                     >
-                      <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Reset
+                      {isReset ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <RotateCcw className="w-3.5 h-3.5 mr-1.5" />}
+                      {isReset ? 'Done' : 'Reset'}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Reset to Default Content</TooltipContent>
