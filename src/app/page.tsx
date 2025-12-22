@@ -24,6 +24,7 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [filename, setFilename] = useState('document.md');
   const [isEditing, setIsEditing] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(false);
   const [tempFilename, setTempFilename] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -163,6 +164,8 @@ export default function Home() {
         const text = e.target?.result;
         if (typeof text === 'string') {
           handleContentChange(text);
+          setIsUploaded(true);
+          setTimeout(() => setIsUploaded(false), 2000);
         }
       };
       reader.readAsText(file);
@@ -382,7 +385,8 @@ export default function Home() {
                       onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
                       className="h-7 px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
                     >
-                      <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload
+                      {isUploaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
+                      {isUploaded ? 'Uploaded' : 'Upload'}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Upload Markdown File</TooltipContent>
