@@ -56,9 +56,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     .report-container { padding: 0; }
     
     h1, h2, h3, h4, h5, h6 {
-      page-break-after: avoid;
-      break-after: avoid;
-      break-after: avoid-page;
+      margin: 0;
     }
 
     h1 {
@@ -74,7 +72,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       padding: 10px 0 10px 20px; 
       margin-top: 0.8cm; 
       margin-bottom: 0.3cm; 
-      page-break-before: always; 
       background: #f8fafc;
       border-radius: 0 8px 8px 0;
       line-height: 1.3;
@@ -116,8 +113,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       font-size: 11pt; 
       color: #334155;
       margin-bottom: 0.4cm;
-      orphans: 3;
-      widows: 3;
     }
 
     ul, ol {
@@ -132,10 +127,12 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     li { 
       margin-bottom: 0.2cm; 
       line-height: 1.6;
-      page-break-inside: avoid;
     }
 
-    .page-break { page-break-before: always; }
+    .page-break, .page-break-marker { 
+      page-break-before: always; 
+      break-before: page;
+    }
     
     pre { 
       background: #0f172a; 
@@ -147,8 +144,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       margin: 0.2cm 0 0.8cm 0;
       border: 1px solid rgba(255,255,255,0.05);
       line-height: 1.45;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     
     code {
@@ -156,7 +151,9 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
     }
 
     hr {
-      display: none;
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 0.8cm 0;
     }
 
 
@@ -166,8 +163,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       display: flex;
       justify-content: center;
       width: 100%;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     
     /* Intermediate container from Mermaid */
@@ -213,8 +208,6 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       color: #475569;
     }
     tr {
-      page-break-inside: avoid;
-      break-inside: avoid;
       page-break-after: auto;
     }
     thead {
@@ -226,13 +219,10 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
       border-radius: 8px;
       display: block;
       margin: 0.2cm auto 0.8cm auto;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     
     .content-page { 
       padding: 0; 
-      page-break-after: always;
       word-break: break-word;
     }
 
@@ -365,34 +355,9 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
           }
         });
 
-        // Smart Caption/Content grouping for PDF
+        // Content grouping disabled as per user request
         window.addEventListener('DOMContentLoaded', () => {
-          // Keep captions with their following block elements
-          document.querySelectorAll('p').forEach(p => {
-            const next = p.nextElementSibling;
-            if (next) {
-              const isShort = p.innerText.trim().length > 0 && p.innerText.trim().length < 120;
-              const isBlock = /^(IMG|TABLE|PRE|DIV)$/.test(next.tagName) || 
-                             next.querySelector('img, table, pre, .mermaid') ||
-                             next.classList.contains('mermaid-wrapper');
-              
-              if (isShort && isBlock) {
-                p.style.breakAfter = 'avoid';
-                p.style.pageBreakAfter = 'avoid';
-                // Also ensure the next element doesn't break inside if it's small-ish
-                if (next.offsetHeight < 500) {
-                  next.style.breakInside = 'avoid';
-                  next.style.pageBreakInside = 'avoid';
-                }
-              }
-            }
-          });
-
-          // Also ensure headings are always kept with next
-          document.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(h => {
-             h.style.breakAfter = 'avoid';
-             h.style.pageBreakAfter = 'avoid';
-          });
+          console.log('DOM loaded, awaiting manual pagebreaks');
         });
       </script>
     </head>
@@ -478,12 +443,12 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
   const pdf = await page.pdf({
     format: 'A4',
     printBackground: true,
-    // CSS @page rules handle per-page margins (0 for first page, 15mm for others)
-    margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' },
+    // We set margin to 0 here to let the CSS @page rules handle the specific margins per page
+    margin: { top: 0, bottom: 0, left: 0, right: 0 },
     displayHeaderFooter: true,
     headerTemplate: '<div></div>',
     footerTemplate: `
-      <div style="font-family: 'Inter', sans-serif; font-size: 9px; width: 100%; display: flex; justify-content: flex-end; padding-right: 15mm; color: #64748b;">
+      <div style="font-family: 'Inter', sans-serif; font-size: 9px; width: 100%; display: flex; justify-content: flex-end; padding-right: 15mm; padding-bottom: 5mm; color: #64748b;">
         <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
       </div>`
   });

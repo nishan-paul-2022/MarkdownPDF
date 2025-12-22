@@ -11,6 +11,8 @@
 - **Batch:** 05
 - **Submission Date:** December 21, 2025
 
+\pagebreak
+
 # Table of Contents
 1. [Executive Summary](#1-executive-summary)
 2. [Simulated Environment Setup](#2-simulated-environment-setup)
@@ -21,7 +23,7 @@
 7. [Conclusion](#7-conclusion)
 8. [Appendix: Tools Used](#appendix-a-tools-used)
 
----
+\pagebreak
 
 ## 1. Executive Summary
 
@@ -36,7 +38,7 @@ Through systematic exploitation, we successfully demonstrated that a remote, una
 *   **Total Compromise:** Successful exploitation resulted in full system access, allowing for unauthorized data exfiltration.
 *   **Configuration Risk:** The legitimate business requirement for SMB file sharing effectively serves as a persistent entry point for this exploit, even with an active firewall.
 
----
+\pagebreak
 
 ## 2. Simulated Environment Setup
 
@@ -79,7 +81,7 @@ netsh advfirewall firewall show rule name="File and Printer Sharing (SMB-In)"
 ```
 This ensures the vulnerability is accessible through Port 445, even with basic security measures in place.
 
----
+\pagebreak
 
 ## 3. Reconnaissance
 
@@ -145,7 +147,7 @@ OS details: Microsoft Windows 7 SP1; Microsoft Windows Embedded Standard 7
 Service Info: Host: SANDBOX-PC; OS: Windows; CPE: cpe:/o:microsoft:windows
 ```
 
----
+\pagebreak
 
 ## 4. Enumeration
 
@@ -201,7 +203,7 @@ nmap --script smb-os-discovery,smb-security-mode -p 445 172.16.115.133
 |   Workgroup: WORKGROUP\x00
 ```
 
----
+\pagebreak
 
 ## 5. Exploitation
 
@@ -254,6 +256,8 @@ Exploit target:
    1   Windows 7
 ```
 
+\pagebreak
+
 ### 5.3 Exploit Execution
 
 ```
@@ -296,7 +300,7 @@ meterpreter >
 
 **Success:** We obtained a Meterpreter session with system access.
 
----
+\pagebreak
 
 ## 6. Post-Exploitation
 
@@ -394,7 +398,7 @@ C:\Windows\system32> dir C:\Users
                4 Dir(s)  22,183,743,488 bytes free
 ```
 
----
+\pagebreak
 
 ## 7. Conclusion
 
@@ -408,7 +412,7 @@ This penetration test successfully demonstrated the critical risk posed by the M
 5. SYSTEM-level access obtained within minutes
 6. Full system compromise and control
 
----
+\pagebreak
 
 ## 8. Appendix: Tools Used
 
@@ -420,8 +424,6 @@ This penetration test successfully demonstrated the critical risk posed by the M
 | Nmap | Network reconnaissance and vulnerability scanning |
 | Metasploit Framework | Exploitation framework |
 | Meterpreter | Post-exploitation payload |
-
----
 
 **Report End**
 

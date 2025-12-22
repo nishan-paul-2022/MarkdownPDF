@@ -213,11 +213,20 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         {children}
       </h3>
     ),
-    p: ({ children }: React.ComponentPropsWithoutRef<'p'>) => (
-      <p className="mb-[0.4cm] leading-[1.6] text-[#334155] text-justify text-[11pt] font-normal font-serif">
-        {children}
-      </p>
-    ),
+    p: ({ children }: React.ComponentPropsWithoutRef<'p'>) => {
+      // Check if this paragraph only contains the \pagebreak command
+      if (React.Children.count(children) === 1) {
+        const firstChild = React.Children.toArray(children)[0];
+        if (typeof firstChild === 'string' && firstChild.trim() === '\\pagebreak') {
+          return <div className="page-break-marker" />;
+        }
+      }
+      return (
+        <p className="mb-[0.4cm] leading-[1.6] text-[#334155] text-justify text-[11pt] font-normal font-serif">
+          {children}
+        </p>
+      );
+    },
     ul: ({ children }: React.ComponentPropsWithoutRef<'ul'>) => (
       <ul className="list-disc mb-[0.4cm] pl-[1.5cm] text-[#334155] text-[11pt] font-serif leading-[1.6]">
         {children}
@@ -259,7 +268,8 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
         {children}
       </blockquote>
     ),
-    hr: () => <hr className="hidden" />,
+    hr: () => <hr className="my-[0.8cm] border-slate-200" />,
+    // Handle the custom divider if we decide to use it, but keeping it simple for now
   }), []);
 
   const handlePdfLoadSuccess = ({ numPages }: { numPages: number }) => {
@@ -317,85 +327,24 @@ export const MdPreview = ({ content, metadata, className, showToolbar = true, on
     const timer = setTimeout(() => {
       if (!stagingRef.current) return;
 
-      const MAX_HEIGHT = 1009; // 1123 - 114
-
       const pages: string[] = [];
       let currentPageBucket: string[] = [];
-      let currentHeight = 0;
 
       const children = Array.from(stagingRef.current.children);
-
-      const isCaption = (el: HTMLElement, nextEl?: HTMLElement): boolean => {
-        // Tag-based captions (headings)
-        if (/^H[1-6]$/.test(el.tagName)) return true;
-        
-        // Potential "straight text" captions: short paragraphs followed by a block element
-        if (nextEl && el.tagName === 'P') {
-          const text = el.innerText || el.textContent || '';
-          const isShort = text.length > 0 && text.length < 120;
-          const capturesBlock = /^(IMG|TABLE|PRE|DIV)$/.test(nextEl.tagName) || 
-                               nextEl.querySelector('img, table, pre, .mermaid');
-          return isShort && !!capturesBlock;
-        }
-        
-        return false;
-      };
-
-      const getGroupHeight = (startIndex: number): number => {
-        let groupHeight = 0;
-        let j = startIndex;
-        while (j < children.length) {
-          const child = children[j] as HTMLElement;
-          const nextChild = children[j + 1] as HTMLElement;
-          const style = window.getComputedStyle(child);
-          const height = child.offsetHeight + (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
-          groupHeight += height;
-
-          // If this element is not a caption, we stop here.
-          // This means we've grouped the caption plus the first piece of content.
-          if (!isCaption(child, nextChild)) {
-            break;
-          }
-          j++;
-        }
-        return groupHeight;
-      };
 
       for (let i = 0; i < children.length; i++) {
         const child = children[i] as HTMLElement;
 
-        if (child.tagName === 'HR' || child.classList.contains('page-break')) {
+        // ONLY break on explicit page markers
+        if (child.classList.contains('page-break-marker') || child.classList.contains('page-break')) {
           if (currentPageBucket.length > 0) {
             pages.push(currentPageBucket.join(''));
             currentPageBucket = [];
-            currentHeight = 0;
           }
           continue;
         }
 
-        const style = window.getComputedStyle(child);
-        const elementHeight = child.offsetHeight + (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
-
-        // Smart "Keep with Next" logic:
-        // If the current element is a heading, look ahead to see how much space the heading(s) + the first content block need.
-        let neededHeight = elementHeight;
-        if (/^H[1-6]$/.test(child.tagName)) {
-          const groupHeight = getGroupHeight(i);
-          // If the group height is within reasonable bounds (not larger than a whole page),
-          // we use it to decide if we should break now.
-          if (groupHeight <= MAX_HEIGHT) {
-            neededHeight = groupHeight;
-          }
-        }
-
-        if (currentHeight + neededHeight > MAX_HEIGHT && currentPageBucket.length > 0) {
-          pages.push(currentPageBucket.join(''));
-          currentPageBucket = [];
-          currentHeight = 0;
-        }
-
         currentPageBucket.push(child.outerHTML);
-        currentHeight += elementHeight;
       }
 
       if (currentPageBucket.length > 0) {

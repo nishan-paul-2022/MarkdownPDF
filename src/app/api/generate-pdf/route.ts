@@ -8,7 +8,8 @@ export async function POST(req: NextRequest) {
 
     // Process markdown to HTML for PDF engine
     // We use marked here as it's simpler for plain HTML generation on server
-    const htmlContent = await marked.parse(markdown);
+    const processedMarkdown = markdown.replace(/\\pagebreak|<!-- pagebreak -->/g, '<div class="page-break-marker"></div>');
+    const htmlContent = await marked.parse(processedMarkdown);
 
     // In a real app, you'd add the cover page and diagrams here
     const pdfBuffer = await generatePdf(htmlContent, metadata);
