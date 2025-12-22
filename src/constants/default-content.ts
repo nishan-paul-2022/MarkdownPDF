@@ -79,4 +79,4 @@ export function removeLandingPageSection(markdown: string): string {
 
 export const DEFAULT_METADATA: Metadata = {};
 
-export const DEFAULT_MARKDOWN_PATH = '/content/default-pki-report.md';
+export const DEFAULT_MARKDOWN_PATH = '/content/sample-document.md';

@@ -20,7 +20,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
   const page = await browser.newPage();
 
   // Load images as base64
-  const logoPath = path.join(process.cwd(), 'public', 'du-logo.png');
+  const logoPath = path.join(process.cwd(), 'public', 'university-logo.png');
   const bgPath = path.join(process.cwd(), 'public', 'cover-bg.png');
 
   let logoBase64 = '';

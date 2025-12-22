@@ -61,7 +61,7 @@ const CoverPage = ({ metadata }: { metadata: MdPreviewProps['metadata'] }) => {
 
       <div className="relative z-10 w-full h-full flex flex-col items-center">
         <div className="mt-[2cm] p-4 flex justify-center">
-          <Image src="/du-logo.png" alt="Logo" width={120} height={120} className="w-[120px] h-auto" />
+          <Image src="/university-logo.png" alt="University Logo" width={120} height={120} className="w-[120px] h-auto" />
         </div>
 
         {metadata.university && (
