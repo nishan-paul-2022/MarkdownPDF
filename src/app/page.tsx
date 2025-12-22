@@ -345,7 +345,7 @@ export default function Home() {
                             <PencilLine className="w-3 h-3" />
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent>Rename file</TooltipContent>
+                        <TooltipContent>Rename File</TooltipContent>
                       </Tooltip>
                     </>
                   )}
@@ -367,7 +367,7 @@ export default function Home() {
                         <ChevronsUp className="w-4 h-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Jump to Start</TooltipContent>
+                    <TooltipContent>Scroll to Top</TooltipContent>
                   </Tooltip>
                   
                   <Tooltip>
@@ -381,7 +381,7 @@ export default function Home() {
                         <ChevronsDown className="w-4 h-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Jump to End</TooltipContent>
+                    <TooltipContent>Scroll to Bottom</TooltipContent>
                   </Tooltip>
                 </div>
 
@@ -407,7 +407,7 @@ export default function Home() {
                         {isUploaded ? 'Uploaded' : 'Upload'}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Upload Markdown File</TooltipContent>
+                    <TooltipContent>Upload Markdown</TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
@@ -422,7 +422,7 @@ export default function Home() {
                         {isDownloaded ? 'Downloaded' : 'Download'}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Download as .md file</TooltipContent>
+                    <TooltipContent>Download Source</TooltipContent>
                   </Tooltip>
                 </div>
 
@@ -440,7 +440,7 @@ export default function Home() {
                         {isCopied ? 'Copied' : 'Copy'}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Copy Markdown Content</TooltipContent>
+                    <TooltipContent>Copy Source</TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
@@ -455,7 +455,7 @@ export default function Home() {
                         {isReset ? 'Done' : 'Reset'}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Reset to Default Content</TooltipContent>
+                    <TooltipContent>Reset Content</TooltipContent>
                   </Tooltip>
                 </div>
             </div>

@@ -608,7 +608,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       LIVE
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>Live Edit View</TooltipContent>
+                  <TooltipContent>Switch to Live Preview</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -628,7 +628,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {!isMetadataValid ? "Fill in all fields to view print preview" : "View print preview"}
+                    {!isMetadataValid ? "Complete metadata to preview" : "Switch to Print Preview"}
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -654,39 +654,51 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        {isAutoRender ? "Pause Auto-Rendering" : "Resume Auto-Rendering"}
+                        {isAutoRender ? "Pause Auto-Sync" : "Resume Auto-Sync"}
                       </TooltipContent>
                     </Tooltip>
 
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => !renderSuccess && handleManualRefresh()}
-                          disabled={!renderSuccess && (isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges)}
-                          className={cn(
-                            "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
-                            renderSuccess
-                              ? "text-green-400 bg-green-500/10 border-transparent"
-                              : !isAutoRender && !isPdfRendering && hasChanges
-                                ? "text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 border-transparent"
-                                : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 disabled:opacity-30 disabled:hover:bg-transparent hover:border-white/5"
-                          )}
-                        >
-                          {renderSuccess ? (
-                            <Check className="w-3.5 h-3.5" />
-                          ) : (
-                            <RefreshCw className={cn("w-3.5 h-3.5", isPdfRendering && "animate-spin")} />
-                          )}
-                        </Button>
+                        <span className="flex">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => !renderSuccess && handleManualRefresh()}
+                            disabled={!renderSuccess && (isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges)}
+                            className={cn(
+                              "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border group",
+                              renderSuccess
+                                ? "bg-green-500/10 border-transparent hover:bg-green-500/20"
+                                : !isAutoRender && !isPdfRendering && hasChanges
+                                  ? "hover:bg-blue-500/10 border-transparent"
+                                  : "border-transparent hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent hover:border-white/5"
+                            )}
+                          >
+                            {renderSuccess ? (
+                              <Check className="w-3.5 h-3.5 text-green-400" />
+                            ) : (
+                              <RefreshCw className={cn(
+                                "w-3.5 h-3.5",
+                                isPdfRendering && "animate-spin",
+                                !isAutoRender && !isPdfRendering && hasChanges
+                                  ? "text-blue-400 group-hover:text-blue-300"
+                                  : "text-slate-500 group-hover:text-slate-100"
+                              )} />
+                            )}
+                          </Button>
+                        </span>
                       </TooltipTrigger>
                       <TooltipContent>
                         {renderSuccess 
-                          ? "Render Successful" 
-                          : hasChanges 
-                            ? "Refresh Preview (Changes Detected)" 
-                            : "Preview is up to date"}
+                          ? "Sync Complete" 
+                          : isPdfRendering
+                            ? "Syncing" 
+                            : !hasChanges
+                              ? "No Changes Detected" 
+                              : isAutoRender 
+                                ? "Auto-Sync Enabled"
+                                : "Sync Pending Changes"}
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -908,7 +920,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {!isMetadataValid ? "Fill in all fields to download PDF" : "Download PDF"}
+                  {!isMetadataValid ? "Complete metadata to download" : "Download PDF"}
                 </TooltipContent>
               </Tooltip>
             </div>
