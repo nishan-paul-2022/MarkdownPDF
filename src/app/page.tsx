@@ -302,14 +302,14 @@ export default function Home() {
                         <button 
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={(e) => { e.stopPropagation(); handleSave(); }}
-                          className="p-0.5 cursor-pointer text-green-400/80 hover:text-green-400 transition-colors"
+                          className="p-0.5 cursor-pointer text-green-400/80 hover:text-green-400 hover:bg-green-400/10 rounded-full transition-all"
                         >
                           <Check className="w-3.5 h-3.5" />
                         </button>
                         <button 
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={(e) => { e.stopPropagation(); handleCancel(); }}
-                          className="p-0.5 cursor-pointer text-red-400/80 hover:text-red-400 transition-colors"
+                          className="p-0.5 cursor-pointer text-red-400/80 hover:text-red-400 hover:bg-red-400/10 rounded-full transition-all"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -324,7 +324,7 @@ export default function Home() {
                         <TooltipTrigger asChild>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleStartEdit(); }}
-                            className="p-1 -mr-1 text-slate-500 hover:text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 rounded-[4px] transition-all cursor-pointer ml-2.5"
+                            className="p-1 -mr-1 text-slate-500 hover:text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 rounded-full transition-all cursor-pointer ml-2.5"
                           >
                             <PencilLine className="w-3 h-3" />
                           </button>
@@ -339,14 +339,14 @@ export default function Home() {
               {/* Right Section - Actions & Controls */}
               <div className="flex items-center gap-5">
                 {/* Navigation Controls */}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-1 border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={scrollToStart}
-                        className="h-7 w-7 rounded-[6px] text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
+                        className="h-7 w-7 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
                       >
                         <ChevronsUp className="w-4 h-4" />
                       </Button>
@@ -360,7 +360,7 @@ export default function Home() {
                         variant="ghost"
                         size="icon"
                         onClick={scrollToEnd}
-                        className="h-7 w-7 rounded-[6px] text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
+                        className="h-7 w-7 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
                       >
                         <ChevronsDown className="w-4 h-4" />
                       </Button>
@@ -370,7 +370,7 @@ export default function Home() {
                 </div>
 
                 {/* Group 1: File Operations (IO) */}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-1 border border-white/5 shadow-inner">
                   <input
                     type="file"
                     accept=".md"
@@ -385,7 +385,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-[6px]"
+                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isUploaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
                         {isUploaded ? 'Uploaded' : 'Upload'}
@@ -400,7 +400,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleDownloadMd(); }}
-                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-[6px]"
+                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isDownloaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Download className="w-3.5 h-3.5 mr-1.5" />}
                         {isDownloaded ? 'Downloaded' : 'Download'}
@@ -411,14 +411,14 @@ export default function Home() {
                 </div>
 
                 {/* Group 2: Editor Utilities (Buffer) */}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-lg p-1 border border-white/5 shadow-inner">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-1 border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleCopy(); }}
-                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-[6px]"
+                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
                         {isCopied ? 'Copied' : 'Copy'}
@@ -433,7 +433,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-[6px]"
+                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isReset ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <RotateCcw className="w-3.5 h-3.5 mr-1.5" />}
                         {isReset ? 'Done' : 'Reset'}
