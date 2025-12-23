@@ -256,7 +256,7 @@ export default function Home() {
       <main className="h-screen-safe w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden relative">
         {/* Header */}
         {/* Floating Branding Island */}
-        <div className="fixed bottom-6 right-6 lg:bottom-6 lg:right-6 z-[60] flex items-center gap-3 px-3 lg:px-4 h-7 lg:h-8 bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-full shadow-lg transition-all hover:bg-slate-900 duration-300 group select-none max-lg:bottom-4 max-lg:right-4">
+        <div className="fixed bottom-4 right-4 lg:bottom-6 lg:right-6 z-[60] flex items-center gap-3 px-3 lg:px-4 h-7 lg:h-8 bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-full shadow-lg transition-all hover:bg-slate-900 duration-300 group select-none">
           <div className="relative">
             <Image src="/brand-logo.svg" alt="Logo" width={18} height={18} className="w-4.5 h-4.5 object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
@@ -297,7 +297,7 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 {/* Filename Badge - Hidden on very small mobile screens */}
                 <div 
-                  className={`group hidden sm:flex items-center gap-1.5 px-3 h-[30px] rounded-full transition-all duration-200 border ${
+                  className={`group hidden sm:flex items-center gap-1.5 px-3 h-7 rounded-full transition-all duration-200 border ${
                     isEditing 
                       ? 'bg-slate-800 border-primary/50 ring-1 ring-primary/20' 
                       : 'bg-slate-800/50 hover:bg-slate-800/70 border-white/5 hover:border-white/10'
@@ -321,7 +321,7 @@ export default function Home() {
                             autoFocus
                             maxLength={MAX_FILENAME_LENGTH}
                             style={{ width: getInputWidth(tempFilename) }}
-                            className="bg-transparent border-none outline-none text-xs font-medium placeholder:text-slate-500 text-slate-100 h-[24px] flex items-center"
+                            className="bg-transparent border-none outline-none text-xs font-medium placeholder:text-slate-500 text-slate-100 h-6 flex items-center focus-visible:ring-0 focus-visible:ring-offset-0"
                             placeholder="document"
                           />
                         <span className="text-[10px] tabular-nums select-none opacity-40 font-medium text-slate-400">
@@ -329,20 +329,24 @@ export default function Home() {
                         </span>
                       </div>
                       <div className="flex items-center gap-1 border-l border-slate-700 ml-1 pl-1">
-                        <button 
+                        <Button 
+                          variant="ghost"
+                          size="icon"
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={(e) => { e.stopPropagation(); handleSave(); }}
-                          className="p-0.5 cursor-pointer text-green-400/80 hover:text-green-400 hover:bg-green-400/10 rounded-full transition-all"
+                          className="h-6 w-6 p-0 cursor-pointer text-green-400/80 hover:text-green-400 hover:bg-green-400/10 rounded-full transition-all border-transparent"
                         >
                           <Check className="w-3.5 h-3.5" />
-                        </button>
-                        <button 
+                        </Button>
+                        <Button 
+                          variant="ghost"
+                          size="icon"
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={(e) => { e.stopPropagation(); handleCancel(); }}
-                          className="p-0.5 cursor-pointer text-red-400/80 hover:text-red-400 hover:bg-red-400/10 rounded-full transition-all"
+                          className="h-6 w-6 p-0 cursor-pointer text-red-400/80 hover:text-red-400 hover:bg-red-400/10 rounded-full transition-all border-transparent"
                         >
                           <X className="w-3.5 h-3.5" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (
@@ -352,12 +356,14 @@ export default function Home() {
                       </span>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={(e) => { e.stopPropagation(); handleStartEdit(); }}
-                            className="p-1 -mr-1 text-slate-500 hover:text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 rounded-full transition-all cursor-pointer ml-2.5"
+                            className="h-6 w-6 p-0 text-slate-500 hover:text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 rounded-full transition-all cursor-pointer ml-2"
                           >
                             <PencilLine className="w-3 h-3" />
-                          </button>
+                          </Button>
                         </TooltipTrigger>
                         <TooltipContent>Rename File</TooltipContent>
                       </Tooltip>
@@ -369,14 +375,14 @@ export default function Home() {
               {/* Right Section - Actions & Controls */}
               <div className="flex items-center gap-2 lg:gap-5">
                 {/* Navigation Group */}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={scrollToStart}
-                        className="h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
+                        className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
                       >
                         <ChevronsUp className="w-3.5 h-3.5" />
                       </Button>
@@ -390,7 +396,7 @@ export default function Home() {
                         variant="ghost"
                         size="icon"
                         onClick={scrollToEnd}
-                        className="h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
+                        className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
                       >
                         <ChevronsDown className="w-3.5 h-3.5" />
                       </Button>
@@ -400,7 +406,7 @@ export default function Home() {
                 </div>
 
                 {/* Group 1: File Operations (IO) */}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                   <input
                     type="file"
                     accept=".md"
@@ -415,7 +421,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                        className="h-[24px] px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isUploaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
                         {isUploaded ? 'Uploaded' : 'Upload'}
@@ -430,7 +436,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleDownloadMd(); }}
-                        className="h-[24px] px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isDownloaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Download className="w-3.5 h-3.5 mr-1.5" />}
                         {isDownloaded ? 'Downloaded' : 'Download'}
@@ -441,14 +447,14 @@ export default function Home() {
                 </div>
 
                 {/* Group 2: Editor Utilities (Buffer) - Hidden on mobile, in dropdown */}
-                <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+                <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleCopy(); }}
-                        className="h-[24px] px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
                         {isCopied ? 'Copied' : 'Copy'}
@@ -463,7 +469,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                        className="h-[24px] px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isReset ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <RotateCcw className="w-3.5 h-3.5 mr-1.5" />}
                         {isReset ? 'Done' : 'Reset'}
@@ -477,7 +483,7 @@ export default function Home() {
                 <div className="md:hidden">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-slate-400">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-slate-400">
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>

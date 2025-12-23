@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, RefreshCw, Play, Pause, Check, MoreVertical } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, DownloadCloud, Loader2, RefreshCw, Play, Pause, Check, MoreVertical, Eye, Printer } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const PdfViewer = dynamic(() => import('./pdf-viewer'), {
@@ -669,39 +669,45 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
         {showToolbar && (
           <div className="flex items-center justify-between px-4 h-12 bg-slate-900/80 border-b border-slate-800 shrink-0 select-none backdrop-blur-sm">
             <div className="flex items-center gap-2">
-              <div className="flex bg-slate-950/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+              <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setViewMode('live')}
                       className={cn(
-                        "px-2 sm:px-3 h-[24px] rounded-full text-[10px] sm:text-[10px] font-bold tracking-wider transition-all duration-200 cursor-pointer border flex items-center justify-center",
+                        "h-6 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 rounded-full border border-transparent flex items-center justify-center gap-1.5",
                         viewMode === 'live'
                           ? "bg-white/10 text-white border-white/20 shadow-sm"
-                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200"
+                          : "text-slate-500 hover:text-slate-100 hover:bg-white/5 hover:border-white/10"
                       )}
                     >
+                      <Eye className="w-3.5 h-3.5" />
                       LIVE
-                    </button>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>Switch to Live Preview</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => isMetadataValid && setViewMode('preview')}
                       disabled={!isMetadataValid}
                       className={cn(
-                        "px-2 sm:px-3 h-[24px] rounded-full text-[10px] sm:text-[10px] font-bold tracking-wider transition-all duration-200 border ml-1 flex items-center justify-center",
+                        "h-6 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 rounded-full border border-transparent flex items-center justify-center gap-1.5",
                         !isMetadataValid
-                          ? "text-slate-700 border-transparent cursor-not-allowed opacity-40"
+                          ? "opacity-40 cursor-not-allowed"
                           : viewMode === 'preview'
-                            ? "bg-white/10 text-white border-white/20 shadow-sm cursor-pointer"
-                            : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 cursor-pointer"
+                            ? "bg-white/10 text-white border-white/20 shadow-sm"
+                            : "text-slate-500 hover:text-slate-100 hover:bg-white/5 hover:border-white/10"
                       )}
                     >
+                      <Printer className="w-3.5 h-3.5" />
                       PRINT
-                    </button>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>
                     {!isMetadataValid ? "Complete metadata to preview" : "Switch to Print Preview"}
@@ -711,7 +717,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
             </div>
             <div className="flex items-center gap-1.5 lg:gap-5">
               {viewMode === 'preview' && (
-                <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+                <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -719,7 +725,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                         size="icon"
                         onClick={() => setIsAutoRender(!isAutoRender)}
                         className={cn(
-                          "h-[24px] w-[24px] rounded-full transition-all duration-200 active:scale-90 border flex items-center justify-center",
+                          "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 border flex items-center justify-center",
                           isAutoRender
                             ? "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
                             : "bg-white/10 text-white border-white/20 shadow-sm hover:bg-white/15"
@@ -742,7 +748,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                           onClick={() => !renderSuccess && handleManualRefresh()}
                           disabled={!renderSuccess && (isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges)}
                           className={cn(
-                            "h-[24px] w-[24px] rounded-full transition-all duration-200 active:scale-90 border border-transparent flex items-center justify-center",
+                            "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 border border-transparent flex items-center justify-center",
                             renderSuccess
                               ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
                               : !isAutoRender && !isPdfRendering && hasChanges
@@ -775,7 +781,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                   </Tooltip>
                 </div>
               )}
-                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+                <div className="flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -783,7 +789,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(1)}
                       disabled={isInitializing || isPdfRendering || currentPage === 1}
-                      className="h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
+                      className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ChevronsUp className="w-3.5 h-3.5" />
                     </Button>
@@ -798,7 +804,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(currentPage - 1)}
                       disabled={isInitializing || isPdfRendering || currentPage === 1}
-                      className="h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
+                      className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ChevronUp className="w-3.5 h-3.5" />
                     </Button>
@@ -806,7 +812,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                   <TooltipContent>Previous Page</TooltipContent>
                 </Tooltip>
 
-                <div className="px-1.5 min-w-[4.5rem] flex justify-center items-center relative h-[24px] overflow-hidden">
+                <div className="px-1.5 min-w-[4.5rem] flex justify-center items-center relative h-6 overflow-hidden">
                   {/* Spinner Reveal */}
                   <div className={cn(
                     "absolute transition-all duration-300 ease-in-out flex items-center justify-center",
@@ -830,7 +836,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                         value={pageInput}
                         onChange={handlePageInputChange}
                         onBlur={handlePageInputSubmit}
-                        className="h-[20px] w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
+                        className="h-5 w-8 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
                       />
                       <span className="text-xs text-slate-400 font-bold select-none tabular-nums">/ {totalPages}</span>
                     </form>
@@ -844,7 +850,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(currentPage + 1)}
                       disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
-                      className="h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
+                      className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ChevronDown className="w-3.5 h-3.5" />
                     </Button>
@@ -859,7 +865,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(totalPages)}
                       disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
-                      className="h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
+                      className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ChevronsDown className="w-3.5 h-3.5" />
                     </Button>
@@ -870,7 +876,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
 
 
-              <div className="hidden lg:flex items-center gap-0.5 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+              <div className="hidden lg:flex items-center gap-0.5 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -897,7 +903,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       value={zoomInput}
                       onChange={handleZoomInputChange}
                       onBlur={handleZoomInputSubmit}
-                      className="h-[20px] w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
+                      className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-full tabular-nums shadow-inner transition-all hover:bg-white/10"
                     />
                   )}
                 </form>
@@ -909,7 +915,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => handleZoomChange(10)}
                       disabled={getScale() * 100 >= 400}
-                      className="h-[24px] w-[24px] rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
+                      className="h-6 w-6 rounded-full text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ZoomIn className="w-3.5 h-3.5" />
                     </Button>
@@ -918,37 +924,41 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 </Tooltip>
               </div>
 
-              <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full p-[2px] border border-white/5 shadow-inner">
+              <div className="hidden md:flex items-center gap-1 bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setZoomMode('fit-page')}
                       className={cn(
-                        "h-[24px] w-[24px] flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 border cursor-pointer outline-none",
+                        "h-6 w-6 flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 border cursor-pointer outline-none",
                         zoomMode === 'fit-page'
                           ? "bg-white/10 text-white border-white/20 shadow-sm"
                           : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
                       )}
                     >
                       <Maximize className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>Fit Page</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setZoomMode('fit-width')}
                       className={cn(
-                        "h-[24px] w-[24px] flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 border cursor-pointer outline-none",
+                        "h-6 w-6 flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 border cursor-pointer outline-none",
                         zoomMode === 'fit-width'
                           ? "bg-white/10 text-white border-white/20 shadow-sm"
                           : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
                       )}
                     >
                       <ArrowLeftRight className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>Fit Width</TooltipContent>
                 </Tooltip>
@@ -956,24 +966,19 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div
-                    className={cn(
-                      "inline-block",
-                      (isGenerating || !isMetadataValid) && "cursor-not-allowed"
-                    )}
-                  >
+                  <div className={cn(
+                    "flex items-center bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner",
+                    (isGenerating || !isMetadataValid) && "opacity-50 cursor-not-allowed"
+                  )}>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={onDownload}
                       disabled={isGenerating || !isMetadataValid}
                       className={cn(
-                        "h-[24px] w-[24px] rounded-full transition-all duration-200 active:scale-90 group/download relative border flex items-center justify-center",
-                        isGenerating || !isMetadataValid
-                          ? "opacity-10 cursor-not-allowed"
-                          : isGenerating
-                            ? "bg-white/10 text-white border-white/20 shadow-sm"
-                            : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
+                        "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 group/download relative border border-transparent flex items-center justify-center",
+                        !isGenerating && isMetadataValid && "text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10",
+                        isGenerating && "bg-white/10 text-white border-white/20 shadow-sm"
                       )}
                     >
                       {isGenerating ? (
@@ -993,7 +998,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
               <div className="lg:hidden flex items-center">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-slate-400">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-slate-400">
                       <MoreVertical className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
