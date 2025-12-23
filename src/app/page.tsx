@@ -162,6 +162,9 @@ export default function Home() {
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
+      
+      setIsPdfDownloaded(true);
+      setTimeout(() => setIsPdfDownloaded(false), 2000);
     } catch (error) {
       console.error('Error downloading PDF:', error);
     } finally {
@@ -206,6 +209,7 @@ export default function Home() {
 
   const [isCopied, setIsCopied] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
+  const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -523,7 +527,7 @@ export default function Home() {
               onDownload={handleDownloadPdf}
               onGeneratePdf={generatePdfBlob}
               isGenerating={isGenerating}
-              isMetadataValid={true}
+              isDownloaded={isPdfDownloaded}
               isLoading={isLoading}
             />
           </div>

@@ -49,7 +49,7 @@ interface MdPreviewProps {
   onDownload?: () => void;
   onGeneratePdf?: () => Promise<Blob>;
   isGenerating?: boolean;
-  isMetadataValid?: boolean;
+  isDownloaded?: boolean;
   isLoading?: boolean;
 }
 
@@ -157,7 +157,7 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
-export const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isMetadataValid = true, isLoading = false }: MdPreviewProps) => {
+export const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isDownloaded = false, isLoading = false }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
@@ -336,12 +336,6 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     setIsPdfReady(false);
   }, []);
 
-  // Auto-switch to LIVE view if metadata becomes invalid while in PRINT view
-  useEffect(() => {
-    if (viewMode === 'preview' && !isMetadataValid) {
-      setViewMode('live');
-    }
-  }, [isMetadataValid, viewMode]);
 
   // Ensure observer is refreshed when view mode changes
   useEffect(() => {
@@ -694,13 +688,10 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => isMetadataValid && setViewMode('preview')}
-                      disabled={!isMetadataValid}
+                      onClick={() => setViewMode('preview')}
                       className={cn(
                         "h-6 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 rounded-full border border-transparent flex items-center justify-center gap-1.5",
-                        !isMetadataValid
-                          ? "opacity-40 cursor-not-allowed"
-                          : viewMode === 'preview'
+                        viewMode === 'preview'
                             ? "bg-white/10 text-white border-white/20 shadow-sm"
                             : "text-slate-500 hover:text-slate-100 hover:bg-white/5 hover:border-white/10"
                       )}
@@ -709,9 +700,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       PRINT
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    {!isMetadataValid ? "Complete metadata to preview" : "Switch to Print Preview"}
-                  </TooltipContent>
+                  <TooltipContent>Switch to Print Preview</TooltipContent>
                 </Tooltip>
               </div>
             </div>
@@ -968,21 +957,25 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 <TooltipTrigger asChild>
                   <div className={cn(
                     "flex items-center bg-slate-800/40 rounded-full h-7 px-[2px] border border-white/5 shadow-inner",
-                    (isGenerating || !isMetadataValid) && "opacity-50 cursor-not-allowed"
+                    isGenerating && "opacity-50 cursor-not-allowed"
                   )}>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={onDownload}
-                      disabled={isGenerating || !isMetadataValid}
+                      disabled={isGenerating}
                       className={cn(
                         "h-6 w-6 rounded-full transition-all duration-200 active:scale-90 group/download relative border border-transparent flex items-center justify-center",
-                        !isGenerating && isMetadataValid && "text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10",
+                        isDownloaded 
+                          ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                          : !isGenerating ? "text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10" : "",
                         isGenerating && "bg-white/10 text-white border-white/20 shadow-sm"
                       )}
                     >
                       {isGenerating ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                      ) : isDownloaded ? (
+                        <Check className="w-3.5 h-3.5" />
                       ) : (
                         <DownloadCloud className="w-3.5 h-3.5" />
                       )}
@@ -990,7 +983,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {!isMetadataValid ? "Complete metadata to download" : "Download PDF"}
+                  {isGenerating ? "Downloading" : "Download PDF"}
                 </TooltipContent>
               </Tooltip>
 
