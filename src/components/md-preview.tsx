@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MermaidDiagram } from './mermaid-diagram';
 import { cn } from '@/lib/utils';
-import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, Sparkles, RefreshCw, Play, Pause, Check } from 'lucide-react';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Maximize, ArrowLeftRight, Eye, DownloadCloud, Loader2, RefreshCw, Play, Pause, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import {
@@ -609,36 +609,19 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
       <div className={cn("pdf-viewer relative flex flex-col h-full bg-slate-900/50", className)}>
         {/* Global Loader Overlay - Centered in viewport, independent of scroll position */}
         <div className={cn(
-          "absolute inset-0 z-50 flex items-center justify-center transition-all duration-200 ease-in-out backdrop-blur-[2px] bg-slate-900/5",
+          "absolute inset-0 z-50 flex items-center justify-center transition-all duration-300 ease-in-out backdrop-blur-[2px] bg-slate-950/20",
           showToolbar ? "top-12" : "top-0",
           isPdfRendering ? "opacity-100" : "opacity-0 pointer-events-none"
         )}>
           <div className="relative flex flex-col items-center gap-8 -translate-y-6">
-            {/* Radial gradient glow background */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-64 h-64 bg-gradient-radial from-primary/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
-            </div>
-
-            {/* Orbital spinner system */}
-            <div className="relative w-24 h-24 scale-110">
-              {/* Outer ring */}
-              <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin" style={{ animationDuration: '3s' }} />
-
-              {/* Middle ring */}
-              <div className="absolute inset-2 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
-
-              {/* Inner glow */}
-              <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/40 to-blue-500/40 blur-md animate-pulse" />
-
-              {/* Center spinner */}
+            <div className="relative w-16 h-16">
+              {/* Simplifed Rings */}
+              <div className="absolute inset-0 rounded-full border border-white/10 animate-spin" style={{ animationDuration: '3s' }} />
+              <div className="absolute inset-2 rounded-full border border-primary/20 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
+              
               <div className="absolute inset-0 flex items-center justify-center">
-                <Loader2 className="w-10 h-10 animate-spin text-primary drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" style={{ animationDuration: '1.5s' }} />
+                <Loader2 className="w-7 h-7 animate-spin text-slate-400" style={{ animationDuration: '1.5s' }} />
               </div>
-
-              {/* Floating particles */}
-              <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
-              <div className="absolute top-1/2 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
-              <div className="absolute -bottom-1 left-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
             </div>
           </div>
         </div>
@@ -669,10 +652,10 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                     <button
                       onClick={() => setViewMode('live')}
                       className={cn(
-                        "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer border",
+                        "px-3 h-7 rounded-[6px] text-[10px] font-bold tracking-wider transition-all duration-200 cursor-pointer border flex items-center justify-center",
                         viewMode === 'live'
-                          ? "bg-white/20 text-white border-white/20 shadow-inner"
-                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                          ? "bg-white/10 text-white border-white/20 shadow-sm"
+                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200"
                       )}
                     >
                       LIVE
@@ -686,12 +669,12 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       onClick={() => isMetadataValid && setViewMode('preview')}
                       disabled={!isMetadataValid}
                       className={cn(
-                        "px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all duration-200 border ml-1",
+                        "px-3 h-7 rounded-[6px] text-[10px] font-bold tracking-wider transition-all duration-200 border ml-1 flex items-center justify-center",
                         !isMetadataValid
                           ? "text-slate-700 border-transparent cursor-not-allowed opacity-40"
                           : viewMode === 'preview'
-                            ? "bg-white/20 text-white border-white/20 shadow-inner cursor-pointer"
-                            : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100 cursor-pointer"
+                            ? "bg-white/10 text-white border-white/20 shadow-sm cursor-pointer"
+                            : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 cursor-pointer"
                       )}
                     >
                       PRINT
@@ -714,10 +697,10 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                           size="icon"
                           onClick={() => setIsAutoRender(!isAutoRender)}
                           className={cn(
-                            "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border",
+                            "h-7 w-7 rounded-[6px] transition-all duration-200 active:scale-90 border flex items-center justify-center",
                             isAutoRender
-                              ? "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
-                              : "bg-white/10 text-white border-white/20 hover:bg-white/20 shadow-inner"
+                              ? "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
+                              : "bg-white/10 text-white border-white/20 shadow-sm hover:bg-white/15"
                           )}
                         >
                           {isAutoRender ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
@@ -737,23 +720,20 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                             onClick={() => !renderSuccess && handleManualRefresh()}
                             disabled={!renderSuccess && (isPdfRendering || (isAutoRender && isPdfReady) || !hasChanges)}
                             className={cn(
-                              "h-7 w-7 rounded-md transition-all duration-200 active:scale-95 border group",
+                              "h-7 w-7 rounded-[6px] transition-all duration-200 active:scale-90 border border-transparent flex items-center justify-center",
                               renderSuccess
-                                ? "bg-green-500/10 border-transparent hover:bg-green-500/20"
+                                ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
                                 : !isAutoRender && !isPdfRendering && hasChanges
-                                  ? "hover:bg-blue-500/10 border-transparent"
-                                  : "border-transparent hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent hover:border-white/5"
+                                  ? "text-blue-400 hover:bg-blue-400/10 hover:border-white/10"
+                                  : "text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 disabled:opacity-20 disabled:hover:bg-transparent"
                             )}
                           >
                             {renderSuccess ? (
-                              <Check className="w-3.5 h-3.5 text-green-400" />
+                              <Check className="w-3.5 h-3.5" />
                             ) : (
                               <RefreshCw className={cn(
                                 "w-3.5 h-3.5",
-                                isPdfRendering && "animate-spin",
-                                !isAutoRender && !isPdfRendering && hasChanges
-                                  ? "text-blue-400 group-hover:text-blue-300"
-                                  : "text-slate-500 group-hover:text-slate-100"
+                                isPdfRendering && "animate-spin"
                               )} />
                             )}
                           </Button>
@@ -783,7 +763,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(1)}
                       disabled={isInitializing || isPdfRendering || currentPage === 1}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-7 w-7 rounded-[6px] text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ChevronsUp className="w-4 h-4" />
                     </Button>
@@ -798,7 +778,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(currentPage - 1)}
                       disabled={isInitializing || isPdfRendering || currentPage === 1}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-7 w-7 rounded-[6px] text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ChevronUp className="w-4 h-4" />
                     </Button>
@@ -814,7 +794,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       ? "opacity-100 scale-100 blur-0" 
                       : "opacity-0 scale-75 blur-sm pointer-events-none"
                   )}>
-                    <Sparkles className="w-4 h-4 animate-pulse text-blue-400" />
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
                   </div>
 
                   {/* Numbers Reveal */}
@@ -844,7 +824,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(currentPage + 1)}
                       disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-7 w-7 rounded-[6px] text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ChevronDown className="w-4 h-4" />
                     </Button>
@@ -859,7 +839,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => scrollToPage(totalPages)}
                       disabled={isInitializing || isPdfRendering || currentPage === totalPages || totalPages === 0}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-7 w-7 rounded-[6px] text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ChevronsDown className="w-4 h-4" />
                     </Button>
@@ -878,7 +858,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => handleZoomChange(-10)}
                       disabled={getScale() * 100 <= 25}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-7 w-7 rounded-[6px] text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ZoomOut className="w-3.5 h-3.5" />
                     </Button>
@@ -889,7 +869,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                 <form onSubmit={handleZoomInputSubmit} className="min-w-[3rem] flex justify-center">
                   {!isScaleCalculated ? (
                     <div className="flex items-center justify-center w-10 h-5">
-                      <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-400" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
                     </div>
                   ) : (
                     <Input
@@ -897,7 +877,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       value={zoomInput}
                       onChange={handleZoomInputChange}
                       onBlur={handleZoomInputSubmit}
-                      className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-primary/50 rounded-sm tabular-nums shadow-inner transition-all"
+                      className="h-5 w-10 text-center bg-white/5 border-none p-0 text-white text-xs font-bold focus-visible:ring-1 focus-visible:ring-white/20 rounded-sm tabular-nums shadow-inner transition-all hover:bg-white/10"
                     />
                   )}
                 </form>
@@ -909,7 +889,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       size="icon"
                       onClick={() => handleZoomChange(10)}
                       disabled={getScale() * 100 >= 400}
-                      className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200 disabled:opacity-20 border border-transparent hover:border-white/5"
+                      className="h-7 w-7 rounded-[6px] text-slate-500 hover:bg-white/5 hover:text-slate-200 border border-transparent hover:border-white/10 active:scale-90 transition-all duration-200 disabled:opacity-10"
                     >
                       <ZoomIn className="w-3.5 h-3.5" />
                     </Button>
@@ -926,10 +906,10 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                     <button
                       onClick={() => setZoomMode('fit-page')}
                       className={cn(
-                        "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
+                        "h-7 w-7 flex items-center justify-center rounded-[6px] transition-all duration-200 active:scale-90 border cursor-pointer outline-none",
                         zoomMode === 'fit-page'
-                          ? "bg-white/20 text-white border-white/20 shadow-inner"
-                          : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
+                          ? "bg-white/10 text-white border-white/20 shadow-sm"
+                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
                       )}
                     >
                       <Maximize className="w-3.5 h-3.5" />
@@ -943,10 +923,10 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                     <button
                       onClick={() => setZoomMode('fit-width')}
                       className={cn(
-                        "h-7 w-7 flex items-center justify-center rounded-md transition-all duration-200 active:scale-95 border cursor-pointer outline-none",
+                        "h-7 w-7 flex items-center justify-center rounded-[6px] transition-all duration-200 active:scale-90 border cursor-pointer outline-none",
                         zoomMode === 'fit-width'
-                          ? "bg-white/20 text-white border-white/20 shadow-inner"
-                          : "text-slate-500 border-transparent hover:bg-white/10 hover:text-slate-100 hover:border-white/5"
+                          ? "bg-white/10 text-white border-white/20 shadow-sm"
+                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
                       )}
                     >
                       <ArrowLeftRight className="w-3.5 h-3.5" />
@@ -972,13 +952,12 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       onClick={onDownload}
                       disabled={isGenerating || !isMetadataValid}
                       className={cn(
-                        "h-7 w-7 rounded-md transition-all duration-200 active:scale-90 group/download relative border",
+                        "h-7 w-7 rounded-[6px] transition-all duration-200 active:scale-90 group/download relative border flex items-center justify-center",
                         isGenerating || !isMetadataValid
-                          ? "opacity-50 cursor-not-allowed"
-                          : "",
-                        isGenerating
-                          ? "bg-white/20 text-white border-white/20 shadow-inner"
-                          : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-100"
+                          ? "opacity-10 cursor-not-allowed"
+                          : isGenerating
+                            ? "bg-white/10 text-white border-white/20 shadow-sm"
+                            : "text-slate-500 border-transparent hover:bg-white/5 hover:text-slate-200 hover:border-white/10"
                       )}
                     >
                       {isGenerating ? (

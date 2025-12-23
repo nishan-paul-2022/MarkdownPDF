@@ -243,12 +243,11 @@ export default function Home() {
       <main className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
         {/* Header */}
         {/* Floating Branding Island */}
-        <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 px-4 py-2 bg-slate-900/85 backdrop-blur-md border border-white/10 rounded-full shadow-2xl transition-all hover:scale-105 hover:bg-slate-900 duration-300 group select-none">
+        <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 px-4 py-2 bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-full shadow-lg transition-all hover:bg-slate-900 duration-300 group select-none">
           <div className="relative">
-            <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <Image src="/brand-logo.svg" alt="Logo" width={24} height={24} className="w-6 h-6 object-contain relative z-10 opacity-90 group-hover:opacity-100 transition-opacity" />
+            <Image src="/brand-logo.svg" alt="Logo" width={24} height={24} className="w-6 h-6 object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
-          <h1 className="text-sm font-medium tracking-wide text-slate-300/90 group-hover:text-slate-100 transition-colors">
+          <h1 className="text-sm font-medium tracking-wide text-slate-400 group-hover:text-slate-100 transition-colors duration-300">
             MarkdownPDF
           </h1>
         </div>
@@ -325,7 +324,7 @@ export default function Home() {
                         <TooltipTrigger asChild>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleStartEdit(); }}
-                            className="p-1 -mr-1 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer ml-2.5"
+                            className="p-1 -mr-1 text-slate-500 hover:text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 rounded-[4px] transition-all cursor-pointer ml-2.5"
                           >
                             <PencilLine className="w-3 h-3" />
                           </button>
@@ -347,7 +346,7 @@ export default function Home() {
                         variant="ghost"
                         size="icon"
                         onClick={scrollToStart}
-                        className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
+                        className="h-7 w-7 rounded-[6px] text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
                       >
                         <ChevronsUp className="w-4 h-4" />
                       </Button>
@@ -361,7 +360,7 @@ export default function Home() {
                         variant="ghost"
                         size="icon"
                         onClick={scrollToEnd}
-                        className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/10 hover:text-slate-100 active:scale-90 transition-all duration-200"
+                        className="h-7 w-7 rounded-[6px] text-slate-500 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-90 transition-all duration-200"
                       >
                         <ChevronsDown className="w-4 h-4" />
                       </Button>
@@ -386,7 +385,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                        className="h-7 w-[96px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-[6px]"
                       >
                         {isUploaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
                         {isUploaded ? 'Uploaded' : 'Upload'}
@@ -401,7 +400,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleDownloadMd(); }}
-                        className="h-7 w-[105px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-[6px]"
                       >
                         {isDownloaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Download className="w-3.5 h-3.5 mr-1.5" />}
                         {isDownloaded ? 'Downloaded' : 'Download'}
@@ -419,7 +418,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleCopy(); }}
-                        className="h-7 w-[85px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-[6px]"
                       >
                         {isCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
                         {isCopied ? 'Copied' : 'Copy'}
@@ -434,7 +433,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                        className="h-7 w-[80px] px-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-400 hover:text-slate-100 hover:bg-white/10 active:scale-95 transition-all duration-200 rounded-md"
+                        className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-[6px]"
                       >
                         {isReset ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <RotateCcw className="w-3.5 h-3.5 mr-1.5" />}
                         {isReset ? 'Done' : 'Reset'}
