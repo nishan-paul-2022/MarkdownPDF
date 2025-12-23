@@ -421,7 +421,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                        className="h-6 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 w-24 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isUploaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
                         {isUploaded ? 'Uploaded' : 'Upload'}
@@ -436,7 +436,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleDownloadMd(); }}
-                        className="h-6 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 w-28 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isDownloaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Download className="w-3.5 h-3.5 mr-1.5" />}
                         {isDownloaded ? 'Downloaded' : 'Download'}
@@ -454,7 +454,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleCopy(); }}
-                        className="h-6 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 w-20 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
                         {isCopied ? 'Copied' : 'Copy'}
@@ -469,7 +469,7 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleReset(); }}
-                        className="h-6 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 w-20 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:text-slate-200 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
                         {isReset ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <RotateCcw className="w-3.5 h-3.5 mr-1.5" />}
                         {isReset ? 'Done' : 'Reset'}
@@ -487,7 +487,7 @@ export default function Home() {
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
+                    <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100 min-w-40">
                       <DropdownMenuItem onClick={handleCopy} className="gap-2 text-xs">
                         {isCopied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
                         {isCopied ? 'Copied' : 'Copy Source'}

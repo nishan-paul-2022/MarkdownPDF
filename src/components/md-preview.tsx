@@ -1002,7 +1002,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
                       <MoreVertical className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
+                  <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100 min-w-44">
                     {viewMode === 'preview' && (
                       <>
                         <DropdownMenuItem onClick={() => setIsAutoRender(!isAutoRender)} className="gap-2 text-xs">
