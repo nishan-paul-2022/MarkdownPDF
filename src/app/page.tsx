@@ -50,8 +50,47 @@ export default function Home() {
   const [isReset, setIsReset] = useState(false);
   const [tempFilename, setTempFilename] = useState('');
   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
+  const [uploadTime, setUploadTime] = useState<Date | null>(null);
+  const [lastModifiedTime, setLastModifiedTime] = useState<Date | null>(null);
+  const [isEditorAtTop, setIsEditorAtTop] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Track scroll position for status bar visibility
+  React.useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const handleScroll = () => {
+      setIsEditorAtTop(textarea.scrollTop < 20);
+    };
+
+    textarea.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    
+    return () => textarea.removeEventListener('scroll', handleScroll);
+  }, [isLoading]);
+
+  // Stats calculation
+  const stats = React.useMemo(() => {
+    const chars = rawContent.length;
+    const words = rawContent.trim() ? rawContent.trim().split(/\s+/).length : 0;
+    return { chars, words };
+  }, [rawContent]);
+
+  const formatDateTime = (date: Date | null) => {
+    if (!date) return '—';
+    return date.toLocaleTimeString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).replace(',', '');
+  };
 
 
 
@@ -85,12 +124,12 @@ export default function Home() {
     if (e.key === 'Escape') handleCancel();
   };
 
-  const [isLoading, setIsLoading] = useState(true);
 
   // Buffer state to keep the Editor "Butter Smooth"
   // We don't update the Live Preview on every keystroke
   const handleContentChange = useCallback((newRawContent: string) => {
     setRawContent(newRawContent);
+    setLastModifiedTime(new Date());
   }, []);
 
   // Debounce the heavy content processing
@@ -119,6 +158,8 @@ export default function Home() {
         const contentWithoutLandingPage = removeLandingPageSection(text);
         setMetadata(parsedMetadata);
         setContent(contentWithoutLandingPage);
+        const now = new Date();
+        setLastModifiedTime(now);
         setIsLoading(false);
       })
       .catch(err => {
@@ -181,6 +222,9 @@ export default function Home() {
         const text = e.target?.result;
         if (typeof text === 'string') {
           handleContentChange(text);
+          const now = new Date();
+          setUploadTime(now);
+          setLastModifiedTime(now);
           setIsUploaded(true);
           setTimeout(() => setIsUploaded(false), 2000);
         }
@@ -200,6 +244,8 @@ export default function Home() {
       
       handleContentChange(text);
       setFilename('document.md');
+      setUploadTime(null);
+      setLastModifiedTime(new Date());
       setIsReset(true);
       setTimeout(() => setIsReset(false), 2000);
     } catch (err) {
@@ -505,12 +551,41 @@ export default function Home() {
             </div>
             </div>
 
-            <div className="flex-grow relative overflow-hidden">
+            <div className="flex-grow relative overflow-hidden group/editor">
+              {/* Floating Status Info - Visible only at top */}
+              <div className={`absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-6 h-9 bg-transparent text-[10px] font-medium tracking-tight select-none pointer-events-none transition-opacity duration-75 ${isEditorAtTop ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-1.5 group/stat">
+                    <span className="uppercase tracking-widest text-[9px] font-bold text-slate-500/80">Words</span>
+                    <span className="tabular-nums text-slate-300">{stats.words}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 group/stat">
+                    <span className="uppercase tracking-widest text-[9px] font-bold text-slate-500/80">Characters</span>
+                    <span className="tabular-nums text-slate-300">{stats.chars}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-6">
+                  {uploadTime && (
+                    <div className="flex items-center gap-1.5 group/stat">
+                      <span className="uppercase tracking-widest text-[9px] font-bold text-blue-400/50">Uploaded</span>
+                      <span className="tabular-nums text-slate-300">{formatDateTime(uploadTime)}</span>
+                    </div>
+                  )}
+                  {lastModifiedTime && (
+                    <div className="flex items-center gap-1.5 group/stat">
+                      <span className="uppercase tracking-widest text-[9px] font-bold text-emerald-400/50">Modified</span>
+                      <span className="tabular-nums text-slate-300">{formatDateTime(lastModifiedTime)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <Editor
                 innerRef={textareaRef}
                 value={rawContent}
                 onChange={handleContentChange}
-                className="absolute inset-0 w-full h-full resize-none border-none p-4 lg:p-6 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
+                className="absolute inset-0 w-full h-full resize-none border-none p-4 lg:p-6 pt-10 lg:pt-10 font-mono text-sm focus-visible:ring-0 bg-slate-950 text-slate-300 selection:bg-primary/30 custom-scrollbar dark-editor"
                 placeholder="Write your markdown here..."
               />
             </div>
