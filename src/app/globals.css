@@ -137,11 +137,27 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: var(--border);
     border-radius: 9999px;
-    border: 2px solid transparent;
+    border: 3px solid transparent; /* Increased padding for sleeker look */
     background-clip: padding-box;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: var(--muted-foreground);
+  }
+  
+  /* Animated Tab Transitions */
+  .tab-enter {
+    animation: tab-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  @keyframes tab-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   
   /* Ensure the native element knows it's in dark mode to fix the track color */
@@ -175,8 +191,10 @@
     overflow-wrap: break-word !important;
   }
 
-  .h-screen-safe {
-    height: 100dvh;
+  /* Better selection color */
+  ::selection {
+    background-color: oklch(0.65 0.05 259.9 / 30%);
+    color: inherit;
   }
 
   @media (max-width: 1023px) {

@@ -307,7 +307,7 @@ export default function Home() {
 
   return (
     <TooltipProvider>
-      <main className="h-screen-safe w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden relative">
+      <main className="h-dvh w-full bg-slate-950 text-slate-100 flex flex-col overflow-hidden relative">
         {/* Header */}
         {/* Floating Branding Island */}
         <div className="fixed bottom-4 right-4 lg:bottom-6 lg:right-6 z-[60] flex items-center gap-3 px-3 lg:px-4 h-7 lg:h-8 bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-full shadow-lg transition-all hover:bg-slate-900 duration-300 group select-none">
@@ -320,29 +320,42 @@ export default function Home() {
         </div>
 
         {/* Mobile View Toggle */}
-        <div className="lg:hidden flex items-center p-1 bg-slate-900 border-b border-slate-800">
-          <button
-            onClick={() => setActiveTab('editor')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold uppercase tracking-widest rounded-md transition-all ${
-              activeTab === 'editor' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <FileCode className="w-3.5 h-3.5" /> Editor
-          </button>
-          <button
-            onClick={() => setActiveTab('preview')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold uppercase tracking-widest rounded-md transition-all ${
-              activeTab === 'preview' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <Eye className="w-3.5 h-3.5" /> Preview
-          </button>
+        <div className="lg:hidden p-3 bg-slate-950/50 backdrop-blur-xl border-b border-white/5 flex justify-center">
+          <div className="flex items-center p-1 bg-slate-900/50 border border-white/5 rounded-xl w-full max-w-sm shadow-inner relative overflow-hidden">
+            <button
+              onClick={() => setActiveTab('editor')}
+              className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-[0.15em] rounded-lg transition-all duration-300 ${
+                activeTab === 'editor' ? 'text-white' : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              <FileCode className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === 'editor' ? 'scale-110' : ''}`} /> 
+              <span>Editor</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('preview')}
+              className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-[0.15em] rounded-lg transition-all duration-300 ${
+                activeTab === 'preview' ? 'text-white' : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              <Eye className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === 'preview' ? 'scale-110' : ''}`} /> 
+              <span>Preview</span>
+            </button>
+            
+            {/* Animated Slider Background */}
+            <div 
+              className="absolute top-1 bottom-1 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-white/10 rounded-lg shadow-sm"
+              style={{
+                width: 'calc(50% - 4px)',
+                left: activeTab === 'editor' ? '4px' : 'calc(50% + 0px)',
+              }}
+            />
+          </div>
         </div>
 
         <div className="flex-grow flex flex-col lg:flex-row gap-0 overflow-hidden relative">
           {/* Editor Side */}
-          <div className={`flex-1 flex flex-col border-r border-slate-800 overflow-hidden transition-all duration-300 ${
-            activeTab === 'editor' ? 'flex' : 'hidden lg:flex'
+          <div className={`flex-1 flex flex-col border-r border-slate-800/50 overflow-hidden transition-all duration-300 ${
+            activeTab === 'editor' ? 'flex tab-enter' : 'hidden lg:flex'
           }`}>
             <div
               className="h-12 bg-slate-900/80 px-4 border-b border-slate-800 flex items-center justify-between transition-colors backdrop-blur-sm"
@@ -596,8 +609,8 @@ export default function Home() {
           </div>
 
           {/* Preview Side */}
-          <div className={`flex-1 flex flex-col overflow-hidden bg-slate-900/20 transition-all duration-300 ${
-            activeTab === 'preview' ? 'flex' : 'hidden lg:flex'
+          <div className={`flex-1 flex flex-col overflow-hidden bg-slate-900/10 transition-all duration-300 ${
+            activeTab === 'preview' ? 'flex tab-enter' : 'hidden lg:flex'
           }`}>
             <MdPreview
               content={content}
