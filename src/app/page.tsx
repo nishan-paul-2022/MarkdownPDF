@@ -315,7 +315,7 @@ export default function Home() {
             <Image src="/brand-logo.svg" alt="Logo" width={18} height={18} className="w-4.5 h-4.5 object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           <h1 className="text-xs font-medium tracking-wide text-slate-400 group-hover:text-slate-100 transition-colors duration-300">
-            MarkdownPDF
+            Markify
           </h1>
         </div>
 

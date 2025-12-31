@@ -1,10 +1,10 @@
-# Progressive Web App (PWA) Strategy for MarkdownPDF
+# Progressive Web App (PWA) Strategy for Markify
 
-As a top-tier UI/UX expert and lead product engineer, I have analyzed your MarkdownPDF application. Transforming a web app into a Progressive Web App (PWA) isn't just about checkboxes; it's about elevating the user's relationship with the tool from "a website I visit" to "a utility I own."
+As a top-tier UI/UX expert and lead product engineer, I have analyzed your Markify application. Transforming a web app into a Progressive Web App (PWA) isn't just about checkboxes; it's about elevating the user's relationship with the tool from "a website I visit" to "a utility I own."
 
 Here is the strategic breakdown for your project.
 
-## 1. Does MarkdownPDF Really Need to Be a PWA?
+## 1. Does Markify Really Need to Be a PWA?
 
 **Decision: Absolutely Yes.**
 
@@ -29,7 +29,7 @@ To qualify as a "true" PWA in 2024/2025, you need three core pillars:
 - **Responsive Adaptation**: Seamless UI across mobile, tablet, and ultra-wide desktops.
 - **Splash Screens & Theming**: Custom start-up screens and status bar color matching.
 
-## 3. Current State Analysis: MarkdownPDF
+## 3. Current State Analysis: Markify
 
 Based on my audit of your current codebase (Next.js 16, Tailwind 4):
 

@@ -1,4 +1,4 @@
-# MarkdownPDF
+# Markify
 
 A professional web application built with Next.js, Shadcn UI, and Playwright to convert Markdown (with Mermaid diagram support) into high-quality PDF reports.
 

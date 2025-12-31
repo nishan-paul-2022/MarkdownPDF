@@ -1,6 +1,6 @@
 .PHONY: build run stop clean
 
-APP_NAME = markdownpdf
+APP_NAME = markify
 PORT = 3000
 
 # Default target
