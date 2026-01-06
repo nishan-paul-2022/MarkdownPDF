@@ -67,8 +67,10 @@ graph LR
     style S4 fill:#fff4e1
 ```
 
+\pagebreak
+
 **Screenshot:**  
-![Topology Creation](/content-new/images/task1-topology.png)
+![Topology Creation](./images/task1-topology.png)
 
 **Verification Command:**
 
@@ -102,7 +104,9 @@ mininet> pingall
 - All hosts can reach each other
 
 **Screenshot:**  
-![Pingall Output](/content-new/images/task2-pingall.png)
+![Pingall Output](./images/task2-pingall.png)
+
+\pagebreak
 
 **Analysis:**  
 The successful pingall test confirms that:
@@ -137,8 +141,10 @@ mininet> h1 ping -c 10 h4
 | Maximum RTT         | \_\_\_ ms |
 | Standard Deviation  | \_\_\_ ms |
 
+\pagebreak
+
 **Screenshot:**  
-![Ping Results](/content-new/images/task3-ping.png)
+![Ping Results](./images/task3-ping.png)
 
 **Analysis:**  
 The RTT between h1 and h4 traverses through:
@@ -171,7 +177,7 @@ mininet> iperf h1 h4
 | h4 → h1 (Server) | \_\_\_ Gbits/sec | \_\_\_ GBytes | 10 sec   |
 
 **Screenshot:**  
-![Iperf Output](/content-new/images/task4-iperf.png)
+![Iperf Output](./images/task4-iperf.png)
 
 **Analysis:**  
 The throughput measurement reveals:
@@ -203,7 +209,7 @@ mininet> link s2 s3 down
 ```
 
 **Screenshot:**  
-![Link Down Command](/content-new/images/task5-failure.png)
+![Link Down Command](./images/task5-failure.png)
 
 ---
 
@@ -225,7 +231,7 @@ From 10.0.0.1 icmp_seq=3 Destination Host Unreachable
 ```
 
 **Screenshot:**  
-![Failed Ping](/content-new/images/task5-failure.png)
+![Failed Ping](./images/task5-failure.png)
 
 ---
 
@@ -294,6 +300,8 @@ When the s2-s3 link failed:
 - ❌ h2 could not reach h3, h4
 - ✓ h1 could still reach h2 (same segment)
 - ✓ h3 could still reach h4 (same segment)
+
+\pagebreak
 
 **Network Partition Visualization:**
 
@@ -376,6 +384,8 @@ For our linear topology:
 | 6    | h1 → h7  | ~3.5              | Acceptable  |
 | 10   | h1 → h11 | ~6.0              | Degraded    |
 
+\pagebreak
+
 **Key Observations:**
 
 - ⚠️ Each additional switch adds processing delay
@@ -416,7 +426,7 @@ graph LR
 
 **Impact:** Only h1 isolated (3 hosts remain connected)
 
----
+\pagebreak
 
 **Scenario B: Core Link Failure (s2-s3)**
 
@@ -486,7 +496,7 @@ This lab demonstrated that linear topology, while simple to understand and imple
 - Single link failures cause network partitioning
 - Not recommended for production use
 
----
+\pagebreak
 
 ## Appendix
 
@@ -513,4 +523,4 @@ mininet> dump
 
 ---
 
-_End of Report_
+End of Report

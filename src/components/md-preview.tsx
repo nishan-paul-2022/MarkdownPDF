@@ -51,6 +51,7 @@ interface MdPreviewProps {
   isGenerating?: boolean;
   isDownloaded?: boolean;
   isLoading?: boolean;
+  basePath?: string;
 }
 
 
@@ -157,7 +158,7 @@ const PageWrapper = ({ children, pageNumber, totalPages }: { children: React.Rea
   );
 };
 
-export const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isDownloaded = false, isLoading = false }: MdPreviewProps) => {
+export const MdPreview = React.memo(({ content, metadata, className, showToolbar = true, onDownload, onGeneratePdf, isGenerating = false, isDownloaded = false, isLoading = false, basePath = '' }: MdPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
@@ -270,10 +271,22 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
         {children}
       </td>
     ),
-    img: ({ src, alt }: React.ComponentPropsWithoutRef<'img'>) => (
-      /* eslint-disable-next-line @next/next/no-img-element */
-      <img src={src} alt={alt} className="max-w-full h-auto rounded-lg mx-auto mt-[0.2cm] mb-[0.8cm] block" />
-    ),
+    img: ({ src, alt }: React.ComponentPropsWithoutRef<'img'>) => {
+      let imageSrc = typeof src === 'string' ? src : '';
+      if (imageSrc.startsWith('./') && basePath) {
+        // Remove ./ and prepend base path
+        const cleanBasePath = basePath.endsWith('/') ? basePath : `${basePath}/`;
+        imageSrc = cleanBasePath + imageSrc.slice(2);
+      } else if (imageSrc && !imageSrc.startsWith('/') && !imageSrc.startsWith('http') && basePath) {
+        // Handle case where it doesn't start with ./ but is relative
+        const cleanBasePath = basePath.endsWith('/') ? basePath : `${basePath}/`;
+        imageSrc = cleanBasePath + imageSrc;
+      }
+      return (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img src={imageSrc} alt={alt} className="max-w-full h-auto rounded-lg mx-auto mt-[0.2cm] mb-[0.8cm] block" />
+      );
+    },
     blockquote: ({ children }: React.ComponentPropsWithoutRef<'blockquote'>) => (
       <blockquote className="border-l-4 border-slate-300 pl-4 italic text-slate-600 my-4">
         {children}
@@ -281,7 +294,7 @@ export const MdPreview = React.memo(({ content, metadata, className, showToolbar
     ),
     hr: () => <hr className="my-[0.8cm] border-slate-200" />,
     // Handle the custom divider if we decide to use it, but keeping it simple for now
-  }), []);
+  }), [basePath]);
 
   const handlePdfLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
     setNumPages(numPages);

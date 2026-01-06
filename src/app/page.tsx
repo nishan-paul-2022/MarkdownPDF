@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { MdPreview } from '@/components/md-preview';
 import { Editor } from '@/components/editor';
 import { DEFAULT_MARKDOWN_PATH, DEFAULT_METADATA, parseMetadataFromMarkdown, removeLandingPageSection, Metadata } from '@/constants/default-content';
-import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download, Eye, MoreVertical } from 'lucide-react';
+import { FileCode, Upload, RotateCcw, ChevronsUp, ChevronsDown, PencilLine, Check, X, Copy, Download, Eye, MoreVertical, FolderOpen } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -58,7 +58,9 @@ export default function Home() {
   const [lastModifiedTime, setLastModifiedTime] = useState<Date | null>(null);
   const [isEditorAtTop, setIsEditorAtTop] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [basePath, setBasePath] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Track scroll position for status bar visibility
@@ -164,6 +166,13 @@ export default function Home() {
         setContent(contentWithoutLandingPage);
         const now = new Date();
         setLastModifiedTime(now);
+        
+        // Set base path for images if it's a default path
+        const lastSlashIndex = DEFAULT_MARKDOWN_PATH.lastIndexOf('/');
+        if (lastSlashIndex !== -1) {
+          setBasePath(DEFAULT_MARKDOWN_PATH.substring(0, lastSlashIndex));
+        }
+        
         setIsLoading(false);
       })
       .catch(err => {
@@ -182,7 +191,8 @@ export default function Home() {
       },
       body: JSON.stringify({
         markdown: content,
-        metadata: metadata
+        metadata: metadata,
+        basePath: basePath
       }),
     });
 
@@ -191,7 +201,7 @@ export default function Home() {
     }
 
     return await response.blob();
-  }, [content, metadata]);
+  }, [content, metadata, basePath]);
 
   const handleDownloadPdf = useCallback(async () => {
     setIsGenerating(true);
@@ -237,8 +247,43 @@ export default function Home() {
     }
   }, [handleContentChange]);
 
+  const handleFolderUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      // Find the first markdown file
+      const mdFile = Array.from(files).find(f => f.name.endsWith('.md'));
+      
+      if (!mdFile) {
+        alert("The selected folder must contain at least one .md file.");
+        return;
+      }
+
+      setFilename(mdFile.name);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result;
+        if (typeof text === 'string') {
+          handleContentChange(text);
+          const now = new Date();
+          setUploadTime(now);
+          setLastModifiedTime(now);
+          setIsUploaded(true);
+          setTimeout(() => setIsUploaded(false), 2000);
+        }
+      };
+      reader.readAsText(mdFile);
+      
+      // Note: Full folder support with local images in the browser preview 
+      // would require complex URL mapping. For now, we load the main .md.
+    }
+  }, [handleContentChange]);
+
   const triggerFileUpload = useCallback(() => {
     fileInputRef.current?.click();
+  }, []);
+
+  const triggerFolderUpload = useCallback(() => {
+    folderInputRef.current?.click();
   }, []);
 
   const handleReset = useCallback(async () => {
@@ -481,6 +526,13 @@ export default function Home() {
                     onChange={handleFileUpload}
                     className="hidden"
                   />
+                  <input
+                    type="file"
+                    ref={folderInputRef}
+                    className="hidden"
+                    {...({ webkitdirectory: "", directory: "" } as React.InputHTMLAttributes<HTMLInputElement>)}
+                    onChange={handleFolderUpload}
+                  />
                   
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -488,13 +540,13 @@ export default function Home() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); triggerFileUpload(); }}
-                        className="h-6 w-24 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        className="h-6 w-16 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
-                        {isUploaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
-                        {isUploaded ? 'Uploaded' : 'Upload'}
+                        {isUploaded ? <Check className="w-3 h-3 mr-1 text-green-400" /> : <Upload className="w-3 h-3 mr-1" />}
+                        File
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Upload Markdown</TooltipContent>
+                    <TooltipContent>Upload .md File</TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
@@ -502,11 +554,28 @@ export default function Home() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={(e) => { e.stopPropagation(); handleDownloadMd(); }}
-                        className="h-6 w-28 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                        onClick={(e) => { e.stopPropagation(); triggerFolderUpload(); }}
+                        className="h-6 w-20 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
                       >
-                        {isDownloaded ? <Check className="w-3.5 h-3.5 mr-1.5 text-green-400" /> : <Download className="w-3.5 h-3.5 mr-1.5" />}
-                        {isDownloaded ? 'Downloaded' : 'Download'}
+                        <FolderOpen className="w-3 h-3 mr-1 text-amber-500/70" />
+                        Folder
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Upload Folder (.md + images)</TooltipContent>
+                  </Tooltip>
+
+                  <div className="w-[1px] h-3 bg-white/10 mx-1" />
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleDownloadMd(); }}
+                        className="h-6 w-24 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-100 hover:bg-white/5 hover:border-white/10 border border-transparent active:scale-95 transition-all duration-200 rounded-full"
+                      >
+                        {isDownloaded ? <Check className="w-3 h-3 mr-1 text-green-400" /> : <Download className="w-3 h-3 mr-1" />}
+                        Export
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Download Source</TooltipContent>
@@ -621,6 +690,7 @@ export default function Home() {
               isGenerating={isGenerating}
               isDownloaded={isPdfDownloaded}
               isLoading={isLoading}
+              basePath={basePath}
             />
           </div>
         </div>
