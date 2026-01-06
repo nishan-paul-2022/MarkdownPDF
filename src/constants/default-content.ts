@@ -82,4 +82,4 @@ export function removeLandingPageSection(markdown: string): string {
 
 export const DEFAULT_METADATA: Metadata = {};
 
-export const DEFAULT_MARKDOWN_PATH = '/content/sample-document.md';
+export const DEFAULT_MARKDOWN_PATH = '/content-2/sample-document.md';
