@@ -56,9 +56,9 @@ const MdPreview = React.memo(({
 }: MdPreviewProps): React.JSX.Element => {
   const previewState = usePreview({ content, metadata, onGeneratePdf });
   const {
-    viewMode, pdfBlobUrl, isPdfReady, isPdfLoading, isPaginating, 
-    renderSuccess, hasChanges, containerRef, contentRef, stagingRef,
-    numPages, paginatedPages, totalPages, showCoverPage,
+    viewMode, pdfBlobUrl, isPdfReady, isPdfLoading, 
+    containerRef, contentRef, stagingRef,
+    paginatedPages, totalPages, showCoverPage,
     contentHeight, getScale, isInitializing,
     handlePdfLoadSuccess, onPdfRenderSuccess
   } = previewState;

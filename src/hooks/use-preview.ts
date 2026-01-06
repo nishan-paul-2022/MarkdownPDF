@@ -8,7 +8,7 @@ export const A4_HEIGHT_PX = 1123; // 297mm at 96 DPI
 
 interface UsePreviewProps {
   content: string;
-  metadata: any;
+  metadata: Record<string, unknown> | null | undefined;
   onGeneratePdf?: () => Promise<Blob>;
 }
 
@@ -123,9 +123,9 @@ export function usePreview({ content, metadata, onGeneratePdf }: UsePreviewProps
     return () => clearTimeout(timer);
   }, [content, metadata, viewMode]);
 
-  const hasMetadataValues = (meta: any): boolean => {
+  const hasMetadataValues = (meta: Record<string, unknown> | null | undefined): boolean => {
     if (!meta) return false;
-    return Object.values(meta).some(val => val && (val as string).trim().length > 0);
+    return Object.values(meta).some(val => typeof val === 'string' && val.trim().length > 0);
   };
   
   const showCoverPage = metadata && hasMetadataValues(metadata);
@@ -363,6 +363,8 @@ export function usePreview({ content, metadata, onGeneratePdf }: UsePreviewProps
     scrollToPage,
     getScale,
     totalPages,
+    setZoomMode,
+    isInitializing: !isScaleCalculated,
     showCoverPage
   };
 }
