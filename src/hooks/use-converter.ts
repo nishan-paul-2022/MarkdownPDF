@@ -190,6 +190,8 @@ export function useConverter() {
 
   const handleFolderUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const files = event.target.files;
+    console.log('📂 Folder upload triggered, files:', files?.length);
+    
     if (files && files.length > 0) {
       const mdFile = Array.from(files).find(f => f.name.endsWith('.md'));
       
@@ -197,6 +199,9 @@ export function useConverter() {
         alert("The selected folder must contain at least one .md file.");
         return;
       }
+
+      console.log('📄 Found markdown file:', mdFile.name);
+      console.log('📦 Total files to upload:', files.length);
 
       // 1. Immediate local preview
       setFilename(mdFile.name);
@@ -213,14 +218,18 @@ export function useConverter() {
       setIsLoading(true);
       const batchId = self.crypto.randomUUID();
       
+      console.log('🆔 Generated batchId:', batchId);
+      
       try {
         // Upload files in parallel
-        const uploadPromises = Array.from(files).map(async (file) => {
+        const uploadPromises = Array.from(files).map(async (file, index) => {
           const formData = new FormData();
           formData.append('file', file);
           formData.append('batchId', batchId);
           // Use webkitRelativePath for folder structure, fallback to name
           formData.append('relativePath', file.webkitRelativePath || file.name);
+          
+          console.log(`📤 Uploading file ${index + 1}/${files.length}:`, file.name);
           
           try {
             const response = await fetch('/api/files', {
@@ -229,53 +238,71 @@ export function useConverter() {
             });
             
             if (!response.ok) {
-              console.warn(`Failed to upload ${file.name}`);
+              const errorText = await response.text();
+              console.error(`❌ Upload failed for ${file.name}:`, response.status, errorText);
               return null;
             }
             
-            return await response.json();
+            const result = await response.json();
+            console.log(`✅ Uploaded ${file.name}:`, result);
+            return result;
           } catch (err) {
-            console.warn(`Error uploading ${file.name}:`, err);
+            console.error(`❌ Error uploading ${file.name}:`, err);
             return null;
           }
         });
 
         const results = await Promise.all(uploadPromises);
         
-        // Find the uploaded markdown file to determine the correct base path for images
-        const mdResult = results.find(r => r && r.file && r.file.originalName === mdFile.name);
+        console.log('📊 Upload complete. Successful uploads:', results.filter(r => r !== null).length);
         
-        console.log('📁 Folder upload results:', results.filter(r => r !== null).map(r => ({
-          originalName: r?.file?.originalName,
-          url: r?.file?.url,
-          relativePath: r?.file?.relativePath
-        })));
+        // Find the uploaded markdown file result to determine the correct base path for images
+        // We look for a result where the original name matches our selected mdFile
+        const mdResult = results.find(r => 
+          r && r.file && (
+            r.file.originalName === mdFile.name || 
+            (r.file.relativePath && r.file.relativePath.endsWith(mdFile.name))
+          )
+        );
+        
+        console.log('🔍 Searching for MD result for:', mdFile.name);
+        console.log('📊 Successful results:', results.filter(r => r !== null).length);
         
         if (mdResult && mdResult.file && mdResult.file.url) {
-           // url is typically /uploads/userId/batchId/relativePath (e.g., /uploads/userId/batchId/content-2/sample-document.md)
-           // We want basePath to be /api/uploads/userId/batchId/content-2
-           // This allows relative images like "./images/pic.png" to resolve to /api/uploads/userId/batchId/content-2/images/pic.png
-           const fileUrl = mdResult.file.url;
-           console.log('📄 Markdown file URL:', fileUrl);
-           
-           // Extract the directory path (remove the filename)
-           const lastSlashIndex = fileUrl.lastIndexOf('/');
-           if (lastSlashIndex !== -1) {
-             const directoryPath = fileUrl.substring(0, lastSlashIndex);
-             
-             // Convert /uploads/... to /api/uploads/...
-             let finalBasePath = '';
-             if (directoryPath.startsWith('/uploads/')) {
-               finalBasePath = '/api' + directoryPath;
-             } else if (directoryPath.startsWith('uploads/')) {
-               finalBasePath = '/api/' + directoryPath;
-             } else {
-               finalBasePath = directoryPath;
-             }
-             
-             console.log('🗂️ Setting basePath to:', finalBasePath);
-             setBasePath(finalBasePath);
-           }
+            const fileUrl = mdResult.file.url;
+            console.log('📄 Found Markdown file URL:', fileUrl);
+            
+            // Extract the directory path (remove the filename)
+            const lastSlashIndex = fileUrl.lastIndexOf('/');
+            if (lastSlashIndex !== -1) {
+              const directoryPath = fileUrl.substring(0, lastSlashIndex);
+              
+              // Ensure we use the /api/uploads prefix for proper routing
+              let finalBasePath = directoryPath;
+              if (!finalBasePath.startsWith('/api/')) {
+                if (finalBasePath.startsWith('/')) {
+                  finalBasePath = '/api' + finalBasePath;
+                } else {
+                  finalBasePath = '/api/' + finalBasePath;
+                }
+              }
+              
+              console.log('🗂️ Setting basePath to:', finalBasePath);
+              setBasePath(finalBasePath);
+            }
+        } else {
+          console.warn('⚠️ Could not find MD file result to set basePath. Images might not load.');
+          // Fallback: try to find any result with .md extension
+          const anyMdResult = results.find(r => r && r.file && r.file.originalName?.endsWith('.md'));
+          if (anyMdResult && anyMdResult.file?.url) {
+            const fileUrl = anyMdResult.file.url;
+            const lastSlashIndex = fileUrl.lastIndexOf('/');
+            if (lastSlashIndex !== -1) {
+              const finalBasePath = '/api' + fileUrl.substring(0, lastSlashIndex);
+              console.log('🔄 Fallback: Setting basePath to:', finalBasePath);
+              setBasePath(finalBasePath);
+            }
+          }
         }
 
         const now = new Date();

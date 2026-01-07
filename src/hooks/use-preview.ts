@@ -10,9 +10,10 @@ interface UsePreviewProps {
   content: string;
   metadata: Record<string, unknown> | null | undefined;
   onGeneratePdf?: () => Promise<Blob>;
+  basePath?: string;
 }
 
-export function usePreview({ content, metadata, onGeneratePdf }: UsePreviewProps) {
+export function usePreview({ content, metadata, onGeneratePdf, basePath = '' }: UsePreviewProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState('1');
   const [zoomMode, setZoomMode] = useState<ZoomMode>('fit-width');
@@ -121,7 +122,7 @@ export function usePreview({ content, metadata, onGeneratePdf }: UsePreviewProps
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [content, metadata, viewMode]);
+  }, [content, metadata, viewMode, basePath]);
 
   const hasMetadataValues = (meta: Record<string, unknown> | null | undefined): boolean => {
     if (!meta) return false;

@@ -12,12 +12,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const session = await auth()
     
+    console.log('🔐 File upload - Auth check:', { 
+      hasSession: !!session, 
+      hasUser: !!session?.user, 
+      userId: session?.user?.id 
+    });
+    
     if (!session?.user?.id) {
+      console.error('❌ File upload REJECTED - No authentication');
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       )
     }
+    
+    console.log('✅ File upload - User authenticated:', session.user.id);
 
     const formData = await request.formData()
     const file = formData.get("file") as File | null
@@ -91,22 +100,54 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     const filePath = join(process.cwd(), "public", storageKey)
+    
+    console.log('💾 Saving file to disk:', filePath);
+    console.log('📦 Buffer size:', buffer.length);
     await writeFile(filePath, buffer)
+    
+    // Verify file existence immediately
+    try {
+      // proper check using fs stat
+      const { stat } = await import('fs/promises');
+      const stats = await stat(filePath);
+      console.log('✅ File saved successfully. Size on disk:', stats.size);
+    } catch (verErr) {
+      console.error('❌ CRITICAL: File does not exist after write!', filePath, verErr);
+      throw new Error(`File write verified failed: ${filePath}`);
+    }
 
-    // Save file metadata to database
-    const fileRecord = await prisma.file.create({
-      data: {
-        userId: session.user.id,
-        batchId,
+    // Save file metadata to database (non-blocking - file is already on disk)
+    let fileRecord;
+    try {
+      fileRecord = await prisma.file.create({
+        data: {
+          userId: session.user.id,
+          batchId,
+          filename: uniqueFilename,
+          originalName: file.name,
+          relativePath,
+          mimeType: file.type || (isMarkdown ? "text/markdown" : "application/octet-stream"),
+          size: file.size,
+          storageKey,
+          url: `/${storageKey}`,
+        },
+      })
+      console.log('✅ File metadata saved to database');
+    } catch (dbError) {
+      console.error('⚠️ Database save failed (file still saved to disk):', dbError);
+      // Create a mock record for response
+      fileRecord = {
+        id: uniqueFilename,
         filename: uniqueFilename,
         originalName: file.name,
-        relativePath,
-        mimeType: file.type || (isMarkdown ? "text/markdown" : "application/octet-stream"),
-        size: file.size,
-        storageKey,
         url: `/${storageKey}`,
-      },
-    })
+        size: file.size,
+        mimeType: file.type || (isMarkdown ? "text/markdown" : "application/octet-stream"),
+        batchId,
+        relativePath,
+        createdAt: new Date(),
+      };
+    }
 
     return NextResponse.json({
       success: true,
@@ -123,9 +164,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     })
   } catch (error: unknown) {
-    console.error("File upload error:", error)
+    console.error("File upload error detailed:", error)
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: "Failed to upload file" },
+      { error: `Failed to upload file: ${errorMessage}` },
       { status: 500 }
     )
   }

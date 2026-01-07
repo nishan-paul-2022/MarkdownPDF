@@ -297,7 +297,7 @@ export function ConverterView({
                     type="file"
                     ref={folderInputRef}
                     className="hidden"
-                    {...({ webkitdirectory: "", directory: "" } as React.InputHTMLAttributes<HTMLInputElement>)}
+                    {...({ webkitdirectory: "", directory: "" } as unknown as React.InputHTMLAttributes<HTMLInputElement>)}
                     onChange={handleFolderUpload}
                   />
                   

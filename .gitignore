@@ -32,3 +32,5 @@ next-env.d.ts
 .vscode/
 
 /src/generated/prisma
+
+public/uploads

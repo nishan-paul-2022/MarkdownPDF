@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import ConverterClient from "@/components/converter/ConverterClient";
+import ConverterLoader from "@/components/converter/ConverterLoader";
 
 export default async function ConverterPage(): Promise<React.JSX.Element> {
   const session = await auth();
@@ -9,5 +9,5 @@ export default async function ConverterPage(): Promise<React.JSX.Element> {
     redirect("/");
   }
 
-  return <ConverterClient user={session.user} />;
+  return <ConverterLoader user={session.user} />;
 }
