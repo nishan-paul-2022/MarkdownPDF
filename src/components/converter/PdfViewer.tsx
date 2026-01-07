@@ -17,16 +17,16 @@ interface PdfViewerProps {
     onRenderSuccess?: () => void;
 }
 
-const PdfViewer = React.memo(function PdfViewer({ url, width, onLoadSuccess, onRenderSuccess }: PdfViewerProps) {
+const PdfViewer = React.memo(function PdfViewer({ url, width, onLoadSuccess, onRenderSuccess }: PdfViewerProps): React.JSX.Element {
     const [numPages, setNumPages] = useState<number>(0);
     const [renderedPages, setRenderedPages] = useState<Set<number>>(new Set());
 
-    const onDocumentLoadSuccess = (data: { numPages: number }) => {
+    const onDocumentLoadSuccess = (data: { numPages: number }): void => {
         setNumPages(data.numPages);
         onLoadSuccess(data);
     };
 
-    const handlePageRenderSuccess = (pageNum: number) => {
+    const handlePageRenderSuccess = (pageNum: number): void => {
         setRenderedPages(prev => {
             const next = new Set(prev);
             next.add(pageNum);

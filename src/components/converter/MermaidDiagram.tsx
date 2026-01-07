@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
 import { Loader2 } from 'lucide-react';
 
-export const MermaidDiagram = ({ chart }: MermaidProps) => {
+export default function MermaidDiagram({ chart }: MermaidProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);

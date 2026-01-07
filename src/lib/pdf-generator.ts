@@ -15,7 +15,7 @@ interface Metadata {
   date?: string;
 }
 
-export async function generatePdf(markdownHtml: string, metadata: Metadata) {
+export async function generatePdf(markdownHtml: string, metadata: Metadata): Promise<Buffer> {
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
@@ -29,7 +29,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
   try {
     logoBase64 = fs.readFileSync(logoPath).toString('base64');
     bgBase64 = fs.readFileSync(bgPath).toString('base64');
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('Error reading images:', err);
   }
 
@@ -361,7 +361,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
 
         // Content grouping disabled as per user request
         window.addEventListener('DOMContentLoaded', () => {
-          console.log('DOM loaded, awaiting manual pagebreaks');
+          // DOM loaded
         });
       </script>
     </head>
@@ -441,7 +441,7 @@ export async function generatePdf(markdownHtml: string, metadata: Metadata) {
   try {
     await page.waitForSelector('.mermaid svg, .mermaid[data-processed="true"]', { timeout: 5000 });
   } catch {
-    console.log('Mermaid wait timeout, proceeding anyway...');
+    // Mermaid wait timeout, proceeding anyway...
   }
   // Extra buffer
   await page.waitForTimeout(1000);
