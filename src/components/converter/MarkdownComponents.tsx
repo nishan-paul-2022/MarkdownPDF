@@ -90,6 +90,8 @@ export const createMarkdownComponents = ({ basePath }: MarkdownComponentsProps) 
   ),
   img: ({ src, alt }: React.ComponentPropsWithoutRef<'img'>) => {
     let imageSrc = typeof src === 'string' ? src : '';
+    const originalSrc = imageSrc;
+    
     if (imageSrc.startsWith('./') && basePath) {
       const cleanBasePath = basePath.endsWith('/') ? basePath : `${basePath}/`;
       imageSrc = cleanBasePath + imageSrc.slice(2);
@@ -97,6 +99,9 @@ export const createMarkdownComponents = ({ basePath }: MarkdownComponentsProps) 
       const cleanBasePath = basePath.endsWith('/') ? basePath : `${basePath}/`;
       imageSrc = cleanBasePath + imageSrc;
     }
+    
+    console.log('🖼️ Image resolution:', { originalSrc, basePath, resolvedSrc: imageSrc });
+    
     return (
       /* eslint-disable-next-line @next/next/no-img-element */
       <img src={imageSrc} alt={alt} className="max-w-full h-auto rounded-lg mx-auto mt-[0.2cm] mb-[0.8cm] block" />

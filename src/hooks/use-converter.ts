@@ -198,20 +198,97 @@ export function useConverter() {
         return;
       }
 
+      // 1. Immediate local preview
       setFilename(mdFile.name);
       const reader = new FileReader();
       reader.onload = (e) => {
         const text = e.target?.result;
         if (typeof text === 'string') {
           handleContentChange(text);
-          const now = new Date();
-          setUploadTime(now);
-          setLastModifiedTime(now);
-          setIsUploaded(true);
-          setTimeout(() => setIsUploaded(false), 2000);
         }
       };
       reader.readAsText(mdFile);
+
+      // 2. Upload files to server
+      setIsLoading(true);
+      const batchId = self.crypto.randomUUID();
+      
+      try {
+        // Upload files in parallel
+        const uploadPromises = Array.from(files).map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('batchId', batchId);
+          // Use webkitRelativePath for folder structure, fallback to name
+          formData.append('relativePath', file.webkitRelativePath || file.name);
+          
+          try {
+            const response = await fetch('/api/files', {
+              method: 'POST',
+              body: formData,
+            });
+            
+            if (!response.ok) {
+              console.warn(`Failed to upload ${file.name}`);
+              return null;
+            }
+            
+            return await response.json();
+          } catch (err) {
+            console.warn(`Error uploading ${file.name}:`, err);
+            return null;
+          }
+        });
+
+        const results = await Promise.all(uploadPromises);
+        
+        // Find the uploaded markdown file to determine the correct base path for images
+        const mdResult = results.find(r => r && r.file && r.file.originalName === mdFile.name);
+        
+        console.log('📁 Folder upload results:', results.filter(r => r !== null).map(r => ({
+          originalName: r?.file?.originalName,
+          url: r?.file?.url,
+          relativePath: r?.file?.relativePath
+        })));
+        
+        if (mdResult && mdResult.file && mdResult.file.url) {
+           // url is typically /uploads/userId/batchId/relativePath (e.g., /uploads/userId/batchId/content-2/sample-document.md)
+           // We want basePath to be /api/uploads/userId/batchId/content-2
+           // This allows relative images like "./images/pic.png" to resolve to /api/uploads/userId/batchId/content-2/images/pic.png
+           const fileUrl = mdResult.file.url;
+           console.log('📄 Markdown file URL:', fileUrl);
+           
+           // Extract the directory path (remove the filename)
+           const lastSlashIndex = fileUrl.lastIndexOf('/');
+           if (lastSlashIndex !== -1) {
+             const directoryPath = fileUrl.substring(0, lastSlashIndex);
+             
+             // Convert /uploads/... to /api/uploads/...
+             let finalBasePath = '';
+             if (directoryPath.startsWith('/uploads/')) {
+               finalBasePath = '/api' + directoryPath;
+             } else if (directoryPath.startsWith('uploads/')) {
+               finalBasePath = '/api/' + directoryPath;
+             } else {
+               finalBasePath = directoryPath;
+             }
+             
+             console.log('🗂️ Setting basePath to:', finalBasePath);
+             setBasePath(finalBasePath);
+           }
+        }
+
+        const now = new Date();
+        setUploadTime(now);
+        setLastModifiedTime(now);
+        setIsUploaded(true);
+        setTimeout(() => setIsUploaded(false), 2000);
+      } catch (error) {
+        console.error("Error uploading folder batch:", error);
+        // We don't alert here because the local preview might still work for text
+      } finally {
+        setIsLoading(false);
+      }
     }
   }, [handleContentChange]);
 

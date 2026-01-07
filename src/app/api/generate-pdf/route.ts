@@ -34,7 +34,14 @@ async function processHtmlImages(html: string, basePath?: string): Promise<strin
 
     const potentialPaths: string[] = [];
     if (basePath) {
-      const cleanBasePath = basePath.startsWith('/') ? basePath.substring(1) : basePath;
+      let cleanBasePath = basePath.startsWith('/') ? basePath.substring(1) : basePath;
+      
+      // If the path comes from our API route adjustment, it might start with 'api/'
+      // We need to strip that to get the actual filesystem path in 'public/'
+      if (cleanBasePath.startsWith('api/')) {
+        cleanBasePath = cleanBasePath.substring(4); // Remove 'api/'
+      }
+      
       potentialPaths.push(path.join(process.cwd(), 'public', cleanBasePath, relativePath));
     }
     potentialPaths.push(path.join(process.cwd(), 'public', relativePath));
