@@ -98,6 +98,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
   } catch (error: unknown) {
     console.error('PDF Generation Error:', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
+    if (error instanceof Error) {
+      console.error('Error stack:', error.stack);
+      console.error('Error name:', error.name);
+    }
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : "Internal Server Error",
+      details: error instanceof Error ? error.stack : undefined
+    }, { status: 500 });
   }
 }
